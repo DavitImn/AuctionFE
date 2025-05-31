@@ -1,21 +1,73 @@
-<a href="details/{{ dataForChild.auctionId }}" class="card auction-card text-decoration-none shadow-sm mb-3" style="width: 100%; max-width: 350px;">
-  <div class="img-wrap overflow-hidden" style="height: 200px;">
-    <img [src]="_http.publicUrl + dataForChild.item.imageUrls[0]"
-         class="card-img-top object-fit-cover w-100 h-100"
-         alt="{{ dataForChild.item.title }}">
-  </div>
-  <div class="card-body">
-    <h5 class="card-title mb-2 text-primary">{{ dataForChild.item.title }}</h5>
-    <p class="card-text small text-muted mb-1"><strong>Description:</strong> {{ dataForChild.item.description }}</p>
-    <p class="card-text small text-muted mb-1"><strong>Category:</strong> {{ dataForChild.item.category }}</p>
-    <p class="card-text small text-muted mb-1"><strong>Condition:</strong> {{ dataForChild.item.condition }}</p>
-    <p class="card-text small text-muted mb-1"><strong>Seller:</strong> {{ dataForChild.item.seller.firstName }}</p>
-    <p class="card-text small text-muted mb-1"><strong>Starting Price:</strong> {{ dataForChild.startingPrice }}</p>
-    <p class="card-text small text-muted mb-1"><strong>Current Price:</strong> {{ dataForChild.currentPrice }}</p>
-    <p class="card-text small text-muted mb-1"><strong>Status:</strong> {{ dataForChild.status }}</p>
-    <p class="card-text small text-muted mb-1">
-      <strong>Start:</strong> {{ dataForChild.startTime | date:'yyyy-MM-dd HH:mm' }}<br>
-      <strong>End:</strong> {{ dataForChild.endTime | date:'LLLL dd, yyyy, HH:mm' }}
-    </p>
+<a [routerLink]="['/details', dataForChild.auctionId]" class="card-link">
+  <div class="auction-card">
+    <div class="card-image">
+      <img [src]="_http.publicUrl + dataForChild.item.imageUrls[0]" [alt]="dataForChild.item.title">
+      <div class="lot-number">ლოტი #{{dataForChild.auctionId}}</div>
+      <div class="buy-now-btn">BUY NOW {{dataForChild.currentPrice}}₾</div>
+    </div>
+    
+    <div class="card-content">
+      <h3 class="title">{{dataForChild.item.title}}</h3>
+      <p class="description">{{dataForChild.item.description}}</p>
+      
+      <div class="auction-info">
+        <div class="info-row">
+          <span class="label">კატეგორია:</span>
+          <span class="value">{{dataForChild.item.category}}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">მდგომარეობა:</span>
+          <span class="value">{{dataForChild.item.condition}}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">გამყიდველი:</span>
+          <span class="value">{{dataForChild.item.seller.firstName}}</span>
+        </div>
+      </div>
+
+      <div class="price-info">
+        <div class="price-row">
+          <span class="label">საწყისი ფასი:</span>
+          <span class="price">{{dataForChild.startingPrice}}₾</span>
+        </div>
+        <div class="price-row">
+          <span class="label">მიმდინარე ფასი:</span>
+          <span class="price">{{dataForChild.currentPrice}}₾</span>
+        </div>
+      </div>
+
+      <!-- Dynamic Timer -->
+      <div class="auction-timer">
+        <div class="timer-item">
+          <span class="value">{{remainingDays}}</span>
+          <span class="label">დღე</span>
+        </div>
+        <div class="timer-item">
+          <span class="value">{{remainingHours}}</span>
+          <span class="label">საათი</span>
+        </div>
+        <div class="timer-item">
+          <span class="value">{{remainingMinutes}}</span>
+          <span class="label">წუთი</span>
+        </div>
+        <div class="timer-item">
+          <span class="value">{{remainingSeconds}}</span>
+          <span class="label">წამი</span>
+        </div>
+      </div>
+
+      <div class="auction-dates">
+        <div class="date-row">
+          <span class="label">დაწყება:</span>
+          <span class="date">{{dataForChild.startTime | date:'yyyy-MM-dd HH:mm'}}</span>
+        </div>
+        <div class="date-row">
+          <span class="label">დასრულება:</span>
+          <span class="date">{{dataForChild.endTime | date:'yyyy-MM-dd HH:mm'}}</span>
+        </div>
+      </div>
+
+      <button class="bid-button" (click)="placeBid($event)">ბიდის დადება</button>
+    </div>
   </div>
 </a>
