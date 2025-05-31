@@ -1,0 +1,171 @@
+.card {
+  border-radius: 1rem;
+  border: none;
+}
+
+.card-body {
+  padding: 2rem;
+}
+
+.form-control {
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  padding-right: 40px; /* Make space for the error indicator */
+}
+
+.form-control:focus {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+.form-control.is-invalid {
+  border-color: #dc3545;
+  padding-right: 40px;
+}
+
+.form-control.is-invalid:focus {
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+.btn-primary {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+}
+
+.btn-primary:disabled {
+  cursor: not-allowed;
+}
+
+a {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.text-danger {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.img-thumbnail {
+  border-radius: 0.5rem;
+}
+
+/* Input Group and Error Styles */
+.input-group {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.error-indicator {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  background-color: #dc3545;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 100;
+}
+
+/* Popover Styles */
+:host ::ng-deep .error-popover.popover {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  max-width: 300px;
+}
+
+:host ::ng-deep .error-popover.popover .popover-arrow::before {
+  border-top-color: #f5c6cb;
+}
+
+:host ::ng-deep .error-popover.popover .popover-arrow::after {
+  border-top-color: #f8d7da;
+}
+
+:host ::ng-deep .error-popover.popover .popover-body {
+  color: #721c24;
+  padding: 0.5rem 0.75rem;
+  white-space: pre-line;
+}
+
+/* Alert Messages */
+.alert {
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+/* Form spacing */
+.mb-3 {
+  margin-bottom: 1.5rem !important;
+}
+
+/* Make sure inputs are always accessible */
+.form-control {
+  position: relative;
+  z-index: 1;
+}
+
+/* Success Message Styles */
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alert i {
+  margin-right: 0.5rem;
+  font-size: 1.1em;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

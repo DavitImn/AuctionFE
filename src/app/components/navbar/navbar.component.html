@@ -1,0 +1,78 @@
+<!-- src/app/components/navbar/navbar.component.html -->
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container-fluid">
+    <a class="navbar-brand" routerLink="/">HomePg</a>
+
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div
+      class="collapse navbar-collapse justify-content-between"
+      id="navbarSupportedContent"
+    >
+      <!-- Left: Other nav links -->
+      <ul class="navbar-nav mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" routerLink="/">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/about">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/profile">Profile</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled" aria-disabled="true">Disabled</a>
+        </li>
+      </ul>
+
+      <!-- Center: Search bar -->
+      <form
+        class="d-flex mx-auto"
+        role="search"
+        style="max-width: 400px; width: 100%;"
+      >
+        <input
+          class="form-control me-2"
+          type="search"
+          placeholder="Search"
+          aria-label="Search"
+        />
+        <button class="btn btn-outline-success" type="submit">Search</button>
+      </form>
+
+      <!-- Right: Auth section -->
+      <div id="auth-section" class="d-flex align-items-center">
+        <!-- If NOT logged in: show Login & Register buttons -->
+        <ng-container *ngIf="!(isLoggedIn$ | async)">
+          <a class="btn btn-outline-primary me-2" routerLink="/login">Login</a>
+          <a class="btn btn-outline-secondary" routerLink="/register">Register</a>
+        </ng-container>
+
+        <!-- If logged in: show avatar circle + first name + Logout -->
+        <ng-container *ngIf="isLoggedIn$ | async">
+          <img
+            [src]="userImageUrl$ | async"
+            alt="User Avatar"
+            class="user-avatar rounded-circle me-2"
+          />
+          <span class="navbar-text me-3 text-capitalize">
+            {{ firstName$ | async }}
+          </span>
+          <button class="btn btn-link p-0" (click)="logout()">
+            Logout
+          </button>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</nav>

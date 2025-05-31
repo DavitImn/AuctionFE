@@ -1,0 +1,202 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow">
+        <div class="card-body">
+          <h2 class="text-center mb-4">Register</h2>
+          
+          <!-- Success Message -->
+          <div *ngIf="successMessage" class="alert alert-success mb-3">
+            <i class="fas fa-check-circle me-2"></i>
+            {{ successMessage }}
+          </div>
+
+          <!-- Error Message -->
+          <div *ngIf="errorMessage" class="alert alert-danger mb-3">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            {{ errorMessage }}
+          </div>
+
+          <!-- Register Form -->
+          <form (ngSubmit)="onSubmit()" #registerForm="ngForm" [class.d-none]="successMessage">
+            <!-- Username Field -->
+            <div class="mb-3">
+              <label for="userName" class="form-label">Username <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  [class.is-invalid]="validationErrors.userName"
+                  id="userName"
+                  name="userName"
+                  [(ngModel)]="registerData.userName"
+                  required
+                  #userName="ngModel"
+                  (input)="onInputChange('userName')"
+                />
+                <div *ngIf="validationErrors.userName" class="error-indicator" 
+                     [popover]="validationErrors.userName?.join('\n')"
+                     [outsideClick]="true"
+                     triggers="mouseenter:mouseleave"
+                     placement="top"
+                     containerClass="error-popover">
+                  !
+                </div>
+              </div>
+            </div>
+
+            <!-- Email Field -->
+            <div class="mb-3">
+              <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input
+                  type="email"
+                  class="form-control"
+                  [class.is-invalid]="validationErrors.email"
+                  id="email"
+                  name="email"
+                  [(ngModel)]="registerData.email"
+                  required
+                  email
+                  #email="ngModel"
+                  (input)="onInputChange('email')"
+                />
+                <div *ngIf="validationErrors.email" class="error-indicator" 
+                     [popover]="validationErrors.email?.join('\n')"
+                     [outsideClick]="true"
+                     triggers="mouseenter:mouseleave"
+                     placement="top"
+                     containerClass="error-popover">
+                  !
+                </div>
+              </div>
+            </div>
+
+            <!-- Password Field -->
+            <div class="mb-3">
+              <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input
+                  type="password"
+                  class="form-control"
+                  [class.is-invalid]="validationErrors.password"
+                  id="password"
+                  name="password"
+                  [(ngModel)]="registerData.password"
+                  required
+                  #password="ngModel"
+                  (input)="onInputChange('password')"
+                />
+                <div *ngIf="validationErrors.password" class="error-indicator" 
+                     [popover]="validationErrors.password?.join('\n')"
+                     [outsideClick]="true"
+                     triggers="mouseenter:mouseleave"
+                     placement="top"
+                     containerClass="error-popover">
+                  !
+                </div>
+              </div>
+            </div>
+
+            <!-- First Name Field -->
+            <div class="mb-3">
+              <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  [class.is-invalid]="validationErrors.firstName"
+                  id="firstName"
+                  name="firstName"
+                  [(ngModel)]="registerData.firstName"
+                  required
+                  #firstName="ngModel"
+                  (input)="onInputChange('firstName')"
+                />
+                <div *ngIf="validationErrors.firstName" class="error-indicator" 
+                     [popover]="validationErrors.firstName?.join('\n')"
+                     [outsideClick]="true"
+                     triggers="mouseenter:mouseleave"
+                     placement="top"
+                     containerClass="error-popover">
+                  !
+                </div>
+              </div>
+            </div>
+
+            <!-- Last Name Field -->
+            <div class="mb-3">
+              <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  [class.is-invalid]="validationErrors.lastName"
+                  id="lastName"
+                  name="lastName"
+                  [(ngModel)]="registerData.lastName"
+                  required
+                  #lastName="ngModel"
+                  (input)="onInputChange('lastName')"
+                />
+                <div *ngIf="validationErrors.lastName" class="error-indicator" 
+                     [popover]="validationErrors.lastName?.join('\n')"
+                     [outsideClick]="true"
+                     triggers="mouseenter:mouseleave"
+                     placement="top"
+                     containerClass="error-popover">
+                  !
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile Picture Field -->
+            <div class="mb-3">
+              <label for="userImage" class="form-label">Profile Picture <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input
+                  type="file"
+                  class="form-control"
+                  [class.is-invalid]="validationErrors.userImage"
+                  id="userImage"
+                  name="userImage"
+                  (change)="onFileSelected($event)"
+                  accept="image/*"
+                  required
+                />
+                <div *ngIf="validationErrors.userImage" class="error-indicator" 
+                     [popover]="validationErrors.userImage?.join('\n')"
+                     [outsideClick]="true"
+                     triggers="mouseenter:mouseleave"
+                     placement="top"
+                     containerClass="error-popover">
+                  !
+                </div>
+              </div>
+              <div *ngIf="selectedImage" class="mt-2">
+                <img [src]="previewUrl" class="img-thumbnail" style="max-width: 100px;" alt="Preview">
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              class="btn btn-primary w-100"
+              [disabled]="registerForm.invalid || isLoading"
+            >
+              <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+              {{ isLoading ? 'Registering...' : 'Register' }}
+            </button>
+          </form>
+
+          <!-- Login Link -->
+          <div class="text-center mt-3" [class.d-none]="successMessage">
+            <p class="mb-0">
+              Already have an account? 
+              <a routerLink="/login">Login here</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,59 @@
+<div class="auction-details-container">
+  <div class="image-section">
+    <img [src]="selectedImageUrl" alt="{{data.item.title}}" class="main-image" />
+
+    <div class="thumbnail-row">
+      <img
+        *ngFor="let img of data.item.imageUrls"
+        [src]="_http.publicUrl + img"
+        [class.active]="selectedImageUrl === (_http.publicUrl + img)"
+        (click)="selectedImageUrl = _http.publicUrl + img"
+        alt="thumbnail"
+        class="thumbnail"
+      />
+    </div>
+
+    <div class="location-user-view">
+      <div class="location"><i class="fa fa-map-marker"></i> თბილისი</div>
+      <div class="seller">
+        <i class="fa fa-user"></i> {{data.item.seller.firstName}}<br />
+        {{data.item.seller.email}}
+      </div>
+      <div class="views"><i class="fa fa-eye"></i> {{data.viewCount}}</div>
+    </div>
+  </div>
+
+  <div class="details-section">
+    <h2>{{data.item.title}}</h2>
+
+    <div class="stars">
+      <i class="fa fa-star" *ngFor="let star of [1,2,3,4,5]"></i>
+    </div>
+
+    
+
+    <div class="auction-options">
+  <div class="btn-option">{{ days }} დღე</div>
+  <div class="btn-option">{{ hours }} საათი</div>
+  <div class="btn-option">{{ minutes }} წთ</div>
+  <div class="btn-option">{{ seconds }} წმ</div>
+</div>
+
+    <div class="auction-info">
+      <p><strong>დაწყება:</strong> {{data.startTime | date:'yyyy-MM-dd HH:mm'}}</p>
+      <p><strong>დასრულება:</strong> {{data.endTime | date:'yyyy-MM-dd HH:mm'}}</p>
+      <p><strong>საწყისი ფასი:</strong> {{data.startingPrice}}₾</p>
+      <p><strong>მიმდინარე ფასი:</strong> {{data.currentPrice}}₾</p>
+      <p><strong>ნაბიჯი:</strong> {{data.minBidIncrement}}₾</p>
+      <p><strong>დადებული ბიდები:</strong> {{data.bidCount}}</p>
+    </div>
+
+    <div class="bid-controls">
+      <button class="btn-bid">ბიდის დადება</button>
+    </div>
+
+    <button class="btn-favorite">
+      <i class="fa fa-heart"></i>
+    </button>
+  </div>
+</div>

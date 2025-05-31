@@ -1,0 +1,55 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow">
+        <div class="card-body">
+          <h2 class="text-center mb-4">Login</h2>
+          
+          <!-- Error Message -->
+          <div *ngIf="errorMessage" class="alert alert-danger">
+            {{ errorMessage }}
+          </div>
+
+          <!-- Login Form -->
+          <form (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+              <label for="userName" class="form-label">Username</label>
+              <input
+                type="text"
+                class="form-control"
+                id="userName"
+                name="userName"
+                [(ngModel)]="loginData.userName"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="password" class="form-label">Password</label>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                name="password"
+                [(ngModel)]="loginData.password"
+                required
+              />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+              Login
+            </button>
+          </form>
+
+          <!-- Register Link -->
+          <div class="text-center mt-3">
+            <p class="mb-0">
+              Don't have an account? 
+              <a routerLink="/register">Register here</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

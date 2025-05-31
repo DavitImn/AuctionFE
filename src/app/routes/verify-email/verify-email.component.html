@@ -1,0 +1,83 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow">
+        <div class="card-body">
+          <h2 class="text-center mb-4">Email Verification</h2>
+
+          <!-- Success Message -->
+          <div *ngIf="successMessage" class="alert alert-success mb-3">
+            <i class="fas fa-check-circle me-2"></i>
+            {{ successMessage }}
+          </div>
+
+          <!-- Error Message -->
+          <div *ngIf="errorMessage" class="alert alert-danger mb-3">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            {{ errorMessage }}
+          </div>
+
+          <!-- Verification Form -->
+          <form (ngSubmit)="onSubmit()" #verifyForm="ngForm" [class.d-none]="successMessage">
+            <div class="text-center mb-4">
+              <p class="text-muted">We've sent a verification code to your email address. Please enter it below to complete your registration.</p>
+            </div>
+
+            <!-- Verification Code Input -->
+            <div class="mb-3">
+              <label for="verificationCode" class="form-label">Verification Code <span class="text-danger">*</span></label>
+              <input
+                type="text"
+                class="form-control form-control-lg text-center"
+                [class.is-invalid]="verificationError"
+                id="verificationCode"
+                name="verificationCode"
+                [(ngModel)]="verificationCode"
+                required
+                #code="ngModel"
+                maxlength="6"
+                pattern="[0-9]*"
+              />
+              <div *ngIf="verificationError" class="invalid-feedback text-center">
+                {{ verificationError }}
+              </div>
+            </div>
+
+            <!-- Timer -->
+            <div *ngIf="countdown > 0" class="mb-3">
+              <p class="text-center text-muted small mb-2">Redirecting to login in {{ countdown }} seconds</p>
+              <div class="progress" style="height: 4px;">
+                <div class="progress-bar" [style.width.%]="(countdown / 5) * 100"></div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button 
+              type="submit" 
+              class="btn btn-primary w-100 mb-3"
+              [disabled]="verifyForm.invalid || isLoading"
+            >
+              <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+              {{ isLoading ? 'Verifying...' : 'Verify Email' }}
+            </button>
+
+            <!-- Resend Code -->
+            <div class="text-center">
+              <p class="mb-0">
+                Didn't receive the code? 
+                <button 
+                  type="button" 
+                  class="btn btn-link p-0 align-baseline"
+                  (click)="resendCode()"
+                  [disabled]="resendCountdown > 0"
+                >
+                  {{ resendCountdown > 0 ? `Resend in ${resendCountdown}s` : 'Resend Code' }}
+                </button>
+              </p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

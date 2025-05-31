@@ -1,0 +1,21 @@
+<a href="details/{{ dataForChild.auctionId }}" class="card auction-card text-decoration-none shadow-sm mb-3" style="width: 100%; max-width: 350px;">
+  <div class="img-wrap overflow-hidden" style="height: 200px;">
+    <img [src]="_http.publicUrl + dataForChild.item.imageUrls[0]"
+         class="card-img-top object-fit-cover w-100 h-100"
+         alt="{{ dataForChild.item.title }}">
+  </div>
+  <div class="card-body">
+    <h5 class="card-title mb-2 text-primary">{{ dataForChild.item.title }}</h5>
+    <p class="card-text small text-muted mb-1"><strong>Description:</strong> {{ dataForChild.item.description }}</p>
+    <p class="card-text small text-muted mb-1"><strong>Category:</strong> {{ dataForChild.item.category }}</p>
+    <p class="card-text small text-muted mb-1"><strong>Condition:</strong> {{ dataForChild.item.condition }}</p>
+    <p class="card-text small text-muted mb-1"><strong>Seller:</strong> {{ dataForChild.item.seller.firstName }}</p>
+    <p class="card-text small text-muted mb-1"><strong>Starting Price:</strong> {{ dataForChild.startingPrice }}</p>
+    <p class="card-text small text-muted mb-1"><strong>Current Price:</strong> {{ dataForChild.currentPrice }}</p>
+    <p class="card-text small text-muted mb-1"><strong>Status:</strong> {{ dataForChild.status }}</p>
+    <p class="card-text small text-muted mb-1">
+      <strong>Start:</strong> {{ dataForChild.startTime | date:'yyyy-MM-dd HH:mm' }}<br>
+      <strong>End:</strong> {{ dataForChild.endTime | date:'LLLL dd, yyyy, HH:mm' }}
+    </p>
+  </div>
+</a>

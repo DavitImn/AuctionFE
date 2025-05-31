@@ -1,0 +1,53 @@
+.auction-card {
+  display: block;
+  width: 100%;
+  max-width: 250px;
+  margin: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.auction-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.img-wrap {
+  height: 150px;
+  overflow: hidden;
+  transition: 0.5s;
+}
+
+.img-wrap:hover > .card-img-top {
+  filter: saturate(1.6);
+  transform: scale(1.2);
+}
+
+.card-img-top {
+  height: 100%;
+  object-fit: cover;
+  transition: 0.5s;
+}
+
+.card-body {
+  padding: 5px;
+  
+  font-size: 0.9rem;
+}
+
+.card-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; /* or space-between if you want spacing between cards */
+  gap: 20px;
+  padding: 20px;
+  box-sizing: border-box; /* Important to respect padding */
+}
+.auction-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.auction-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+}
