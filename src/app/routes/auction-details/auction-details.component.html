@@ -1,59 +1,168 @@
-<div class="auction-details-container">
-  <div class="image-section">
-    <img [src]="selectedImageUrl" alt="{{data.item.title}}" class="main-image" />
-
-    <div class="thumbnail-row">
-      <img
-        *ngFor="let img of data.item.imageUrls"
-        [src]="_http.publicUrl + img"
-        [class.active]="selectedImageUrl === (_http.publicUrl + img)"
-        (click)="selectedImageUrl = _http.publicUrl + img"
-        alt="thumbnail"
-        class="thumbnail"
-      />
-    </div>
-
-    <div class="location-user-view">
-      <div class="location"><i class="fa fa-map-marker"></i> თბილისი</div>
-      <div class="seller">
-        <i class="fa fa-user"></i> {{data.item.seller.firstName}}<br />
-        {{data.item.seller.email}}
-      </div>
-      <div class="views"><i class="fa fa-eye"></i> {{data.viewCount}}</div>
-    </div>
+<div class="auction-details-container" [class.fullscreen-mode]="isFullscreen">
+  <div class="breadcrumb">
+    <a href="/home">მთავარი</a> → <a href="/pages">გვერდები</a> → <span>ავტომობილები</span>
   </div>
 
-  <div class="details-section">
-    <h2>{{data.item.title}}</h2>
+  <div class="main-content">
+    <div class="image-section" [class.fullscreen-active]="isFullscreen">
+      <div class="main-image-container" [class.fullscreen]="isFullscreen">
+        <div class="image-wrapper" 
+             [class.zoomed]="zoomLevel > 1"
+             [style.cursor]="zoomLevel > 1 ? 'move' : 'default'"
+             (mousemove)="onMouseMove($event)"
+             (mousedown)="onMouseDown($event)"
+             (mouseup)="onMouseUp()"
+             (mouseleave)="onMouseLeave()">
+          <img 
+            #mainImage
+            [src]="selectedImageUrl" 
+            alt="{{data.item.title}}" 
+            class="main-image"
+            [style.transform]="zoomLevel > 1 ? 'scale(' + zoomLevel + ') translate(' + ((50 - mouseX) / zoomLevel) + '%, ' + ((50 - mouseY) / zoomLevel) + '%)' : 'scale(' + zoomLevel + ')'"
+          />
+        </div>
+        
+        <div class="image-controls">
+          <button class="nav-btn prev" (click)="previousImage()" *ngIf="data.item.imageUrls.length > 1">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button class="nav-btn next" (click)="nextImage()" *ngIf="data.item.imageUrls.length > 1">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
 
-    <div class="stars">
-      <i class="fa fa-star" *ngFor="let star of [1,2,3,4,5]"></i>
+        <div class="zoom-controls">
+          <button class="zoom-btn" (click)="adjustZoom(true)" [disabled]="zoomLevel >= 3">
+            <i class="fas fa-search-plus"></i>
+          </button>
+          <button class="zoom-btn" (click)="adjustZoom(false)" [disabled]="zoomLevel <= 1">
+            <i class="fas fa-search-minus"></i>
+          </button>
+          <button class="fullscreen-btn" (click)="toggleFullscreen()">
+            <i class="fas" [class.fa-expand]="!isFullscreen" [class.fa-compress]="isFullscreen"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="thumbnail-row" [class.hidden]="isFullscreen">
+        <img
+          *ngFor="let img of data.item.imageUrls; let i = index"
+          [src]="_http.publicUrl + img"
+          [class.active]="currentImageIndex === i"
+          (click)="selectImage(i)"
+          alt="thumbnail"
+          class="thumbnail"
+        />
+      </div>
+
+      <div class="location-user-view" [class.hidden]="isFullscreen">
+        <div class="location">
+          <i class="fas fa-map-marker-alt"></i> თბილისი
+        </div>
+        <div class="seller">
+          <i class="fas fa-user"></i> {{data.item.seller.firstName}}<br />
+          {{data.item.seller.email}}
+        </div>
+        
+      </div>
     </div>
 
-    
+    <div class="details-section" [class.hidden]="isFullscreen">
+      <div class="header-section">
+        <div class="title-wrapper">
+          <h2>{{data.item.title}}</h2>
+          <div class="title-border"></div>
+        </div>
+        <button class="favorite-btn" (click)="toggleFavorite()" [class.active]="isFavorite">
+          <i class="fas fa-heart"></i>
+        </button>
+      </div>
 
-    <div class="auction-options">
-  <div class="btn-option">{{ days }} დღე</div>
-  <div class="btn-option">{{ hours }} საათი</div>
-  <div class="btn-option">{{ minutes }} წთ</div>
-  <div class="btn-option">{{ seconds }} წმ</div>
-</div>
+      <div class="price-section">
+        <div class="current-price">
+          <span class="label">მიმდინარე ფასი</span>
+          <span class="amount">{{data.currentPrice}}₾</span>
+        </div>
+        <div class="price-details">
+          <div class="detail-row">
+            <span>საკომისიო</span>
+            <span>10.00%</span>
+          </div>
+          <div class="detail-row">
+            <span>მინიმალური ბიჯი</span>
+            <span>{{data.minimumBidIncrement}}₾</span>
+          </div>
+        </div>
+      </div>
 
-    <div class="auction-info">
-      <p><strong>დაწყება:</strong> {{data.startTime | date:'yyyy-MM-dd HH:mm'}}</p>
-      <p><strong>დასრულება:</strong> {{data.endTime | date:'yyyy-MM-dd HH:mm'}}</p>
-      <p><strong>საწყისი ფასი:</strong> {{data.startingPrice}}₾</p>
-      <p><strong>მიმდინარე ფასი:</strong> {{data.currentPrice}}₾</p>
-      <p><strong>ნაბიჯი:</strong> {{data.minBidIncrement}}₾</p>
-      <p><strong>დადებული ბიდები:</strong> {{data.bidCount}}</p>
+      <div class="auction-info">
+        <div class="info-row date-info">
+          <strong>დაწყება:</strong> 
+          <span>{{data.startTime | date:'yyyy-MM-dd HH:mm'}}</span>
+        </div>
+        <div class="info-row date-info">
+          <strong>დასრულება:</strong> 
+          <span>{{data.endTime | date:'yyyy-MM-dd HH:mm'}}</span>
+        </div>
+        <div class="info-row bid-info">
+          <strong>დადებული ბიდები:</strong> 
+          <span>{{data.bidCount}}</span>
+        </div>
+      </div>
+
+      <div class="countdown-section">
+        <div class="countdown-label">აუქციონის დასრულებამდე დარჩენილია:</div>
+        <div class="countdown-display">
+          <div class="time-unit">
+            <span class="count">{{days}}</span>
+            <span class="label">დღე</span>
+          </div>
+          <div class="time-unit">
+            <span class="count">{{hours}}</span>
+            <span class="label">სთ</span>
+          </div>
+          <div class="time-unit">
+            <span class="count">{{minutes}}</span>
+            <span class="label">წთ</span>
+          </div>
+          <div class="time-unit">
+            <span class="count">{{seconds}}</span>
+            <span class="label">წმ</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bid-section">
+        <div class="bid-input-group">
+          <input type="number" class="bid-input" placeholder="შეიყვანეთ თანხა" />
+          <button class="btn-bid">
+            <i class="fas fa-gavel"></i> ბიდის დადება
+          </button>
+        </div>
+        <div class="bid-actions">
+          <button class="buy-now-btn">
+            <i class="fas fa-shopping-cart"></i> ახლავე ყიდვა
+          </button>
+          <button class="add-watchlist-btn">
+            <i class="fas fa-star"></i> სიაში დამატება
+          </button>
+        </div>
+      </div>
+
+      <div class="auction-metrics">
+        <div class="metric">
+          <span class="value">{{data.bidCount}}</span>
+          <span class="label">აქტიური ბიდები</span>
+        </div>
+        <div class="metric">
+          <span class="value">{{viewCount}}</span>
+          <span class="label">ნახვები</span>
+        </div>
+        <div class="metric">
+          <span class="value">{{data.totalBids || 0}}</span>
+          <span class="label">ჯამური ბიდები</span>
+        </div>
+      </div>
     </div>
-
-    <div class="bid-controls">
-      <button class="btn-bid">ბიდის დადება</button>
-    </div>
-
-    <button class="btn-favorite">
-      <i class="fa fa-heart"></i>
-    </button>
   </div>
 </div>
