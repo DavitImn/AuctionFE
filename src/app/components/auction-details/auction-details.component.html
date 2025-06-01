@@ -1,0 +1,104 @@
+<div class="auction-details">
+  <!-- Image Gallery Slider -->
+  <div class="image-gallery">
+    <div class="gallery-container">
+      <button class="gallery-nav prev" (click)="previousImage()">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      
+      <div class="main-image">
+        <img [src]="_http.publicUrl + currentImage" [alt]="auctionData?.item?.title">
+      </div>
+
+      <button class="gallery-nav next" (click)="nextImage()">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Thumbnail Navigation -->
+    <div class="thumbnails">
+      <div *ngFor="let img of auctionData?.item?.imageUrls; let i = index" 
+           class="thumbnail" 
+           [class.active]="currentImageIndex === i"
+           (click)="selectImage(i)">
+        <img [src]="_http.publicUrl + img" [alt]="'Thumbnail ' + (i + 1)">
+      </div>
+    </div>
+  </div>
+
+  <!-- Auction Information -->
+  <div class="auction-info">
+    <div class="auction-header">
+      <h1 class="title">{{auctionData?.item?.title}}</h1>
+      <div class="lot-number">ლოტი #{{auctionData?.auctionId}}</div>
+    </div>
+
+    <!-- Timer and Price Section -->
+    <div class="auction-status">
+      <div class="timer-section">
+        <div class="timer-grid">
+          <div class="timer-item">
+            <span class="value">{{remainingDays}}</span>
+            <span class="label">დღე</span>
+          </div>
+          <div class="timer-item">
+            <span class="value">{{remainingHours}}</span>
+            <span class="label">საათი</span>
+          </div>
+          <div class="timer-item">
+            <span class="value">{{remainingMinutes}}</span>
+            <span class="label">წუთი</span>
+          </div>
+          <div class="timer-item">
+            <span class="value">{{remainingSeconds}}</span>
+            <span class="label">წამი</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="price-section">
+        <div class="current-price">
+          <span class="label">მიმდინარე ფასი:</span>
+          <span class="price">{{auctionData?.currentPrice}}₾</span>
+        </div>
+        <div class="starting-price">
+          <span class="label">საწყისი ფასი:</span>
+          <span class="price">{{auctionData?.startingPrice}}₾</span>
+        </div>
+        <button class="bid-button" (click)="placeBid()">ბიდის დადება</button>
+      </div>
+    </div>
+
+    <!-- Auction Details -->
+    <div class="details-section">
+      <div class="detail-row">
+        <span class="label">აღწერა:</span>
+        <span class="value">{{auctionData?.item?.description}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">კატეგორია:</span>
+        <span class="value">{{auctionData?.item?.category}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">მდგომარეობა:</span>
+        <span class="value">{{auctionData?.item?.condition}}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">გამყიდველი:</span>
+        <span class="value">{{auctionData?.item?.seller?.firstName}}</span>
+      </div>
+    </div>
+
+    <!-- Auction Dates -->
+    <div class="dates-section">
+      <div class="date-row">
+        <span class="label">დაწყება:</span>
+        <span class="value">{{auctionData?.startTime | date:'yyyy-MM-dd HH:mm'}}</span>
+      </div>
+      <div class="date-row">
+        <span class="label">დასრულება:</span>
+        <span class="value">{{auctionData?.endTime | date:'yyyy-MM-dd HH:mm'}}</span>
+      </div>
+    </div>
+  </div>
+</div> 
