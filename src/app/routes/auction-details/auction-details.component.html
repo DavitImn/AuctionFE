@@ -1,32 +1,30 @@
-<div class="auction-details-container" [class.fullscreen-mode]="isFullscreen">
+<!-- Normal view -->
+<div class="auction-details-container" [class.hidden]="isFullscreen">
   <div class="breadcrumb">
     <a href="/home">მთავარი</a> → <a href="/pages">გვერდები</a> → <span>ავტომობილები</span>
   </div>
 
   <div class="main-content">
-    <div class="image-section" [class.fullscreen-active]="isFullscreen">
-      <div class="main-image-container" [class.fullscreen]="isFullscreen">
+    <div class="image-section">
+      <div class="main-image-container">
         <div class="image-wrapper" 
              [class.zoomed]="zoomLevel > 1"
-             [style.cursor]="zoomLevel > 1 ? 'move' : 'default'"
-             (mousemove)="onMouseMove($event)"
-             (mousedown)="onMouseDown($event)"
-             (mouseup)="onMouseUp()"
-             (mouseleave)="onMouseLeave()">
+             [style.cursor]="zoomLevel > 1 ? 'zoom-in' : 'default'"
+             (mousemove)="onMouseMove($event)">
           <img 
             #mainImage
             [src]="selectedImageUrl" 
-            alt="{{data.item.title}}" 
+            alt="{{data?.item?.title}}" 
             class="main-image"
-            [style.transform]="zoomLevel > 1 ? 'scale(' + zoomLevel + ') translate(' + ((50 - mouseX) / zoomLevel) + '%, ' + ((50 - mouseY) / zoomLevel) + '%)' : 'scale(' + zoomLevel + ')'"
+            [style.transform]="zoomLevel > 1 ? 'scale(' + zoomLevel + ') translate(' + (50 - mouseX) + '%, ' + (50 - mouseY) + '%)' : 'none'"
           />
         </div>
         
-        <div class="image-controls">
-          <button class="nav-btn prev" (click)="previousImage()" *ngIf="data.item.imageUrls.length > 1">
+        <div class="image-controls" [class.hidden]="!data?.item?.imageUrls?.length">
+          <button class="nav-btn prev" (click)="previousImage()" *ngIf="data?.item?.imageUrls?.length > 1">
             <i class="fas fa-chevron-left"></i>
           </button>
-          <button class="nav-btn next" (click)="nextImage()" *ngIf="data.item.imageUrls.length > 1">
+          <button class="nav-btn next" (click)="nextImage()" *ngIf="data?.item?.imageUrls?.length > 1">
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
@@ -44,9 +42,9 @@
         </div>
       </div>
 
-      <div class="thumbnail-row" [class.hidden]="isFullscreen">
+      <div class="thumbnail-row">
         <img
-          *ngFor="let img of data.item.imageUrls; let i = index"
+          *ngFor="let img of data?.item?.imageUrls; let i = index"
           [src]="_http.publicUrl + img"
           [class.active]="currentImageIndex === i"
           (click)="selectImage(i)"
@@ -60,10 +58,9 @@
           <i class="fas fa-map-marker-alt"></i> თბილისი
         </div>
         <div class="seller">
-          <i class="fas fa-user"></i> {{data.item.seller.firstName}}<br />
-          {{data.item.seller.email}}
+          <i class="fas fa-user"></i> {{data?.item?.seller?.firstName}}<br />
+          {{data?.item?.seller?.email}}
         </div>
-        
       </div>
     </div>
 
@@ -166,3 +163,40 @@
     </div>
   </div>
 </div>
+
+<!-- Fullscreen overlay -->
+<div *ngIf="isFullscreen" class="fullscreen-mode">
+  <div class="fullscreen-image-container">
+    <div class="image-wrapper">
+      <img 
+        #mainImage
+        [src]="selectedImageUrl" 
+        alt="{{data?.item?.title}}" 
+        class="main-image"
+      />
+    </div>
+    
+    <div class="image-controls" [class.hidden]="!data?.item?.imageUrls?.length">
+      <button class="nav-btn prev" (click)="previousImage()" *ngIf="data?.item?.imageUrls?.length > 1">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="nav-btn next" (click)="nextImage()" *ngIf="data?.item?.imageUrls?.length > 1">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <div class="zoom-controls">
+      <button class="fullscreen-btn" (click)="toggleFullscreen()">
+        <i class="fas fa-compress"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Add the image modal component -->
+<app-image-modal
+  *ngIf="selectedImage"
+  [imageUrl]="selectedImage"
+  [altText]="auctionDetails?.item?.title"
+  (close)="closeImageModal()"
+></app-image-modal>
