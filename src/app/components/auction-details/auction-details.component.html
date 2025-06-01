@@ -1,16 +1,40 @@
 <div class="auction-details">
+  <!-- Fullscreen Gallery Modal -->
+  <div class="fullscreen-gallery" *ngIf="isFullscreen" (click)="closeFullscreen()">
+    <button class="close-fullscreen" (click)="closeFullscreen()">
+      <i class="fas fa-times"></i>
+    </button>
+    <button class="gallery-nav prev" (click)="previousImage($event)">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="fullscreen-image">
+      <img [src]="httpService.publicUrl + currentImage" [alt]="auctionData?.item?.title">
+    </div>
+    <button class="gallery-nav next" (click)="nextImage($event)">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+
   <!-- Image Gallery Slider -->
   <div class="image-gallery">
     <div class="gallery-container">
-      <button class="gallery-nav prev" (click)="previousImage()">
+      <button class="gallery-nav prev" (click)="previousImage($event)">
         <i class="fas fa-chevron-left"></i>
       </button>
       
-      <div class="main-image">
-        <img [src]="_http.publicUrl + currentImage" [alt]="auctionData?.item?.title">
+      <div class="main-image" (click)="openFullscreen()">
+        <img [src]="httpService.publicUrl + currentImage" 
+             [alt]="auctionData?.item?.title"
+             (mousemove)="handleZoom($event)"
+             (mouseleave)="resetZoom()"
+             #zoomImage>
+        <div class="zoom-hint">
+          <i class="fas fa-search-plus"></i>
+          Click to view fullscreen
+        </div>
       </div>
 
-      <button class="gallery-nav next" (click)="nextImage()">
+      <button class="gallery-nav next" (click)="nextImage($event)">
         <i class="fas fa-chevron-right"></i>
       </button>
     </div>
@@ -21,7 +45,7 @@
            class="thumbnail" 
            [class.active]="currentImageIndex === i"
            (click)="selectImage(i)">
-        <img [src]="_http.publicUrl + img" [alt]="'Thumbnail ' + (i + 1)">
+        <img [src]="httpService.publicUrl + img" [alt]="'Thumbnail ' + (i + 1)">
       </div>
     </div>
   </div>
@@ -30,7 +54,13 @@
   <div class="auction-info">
     <div class="auction-header">
       <h1 class="title">{{auctionData?.item?.title}}</h1>
-      <div class="lot-number">ლოტი #{{auctionData?.auctionId}}</div>
+      <div class="auction-meta">
+        <div class="lot-number">ლოტი #{{auctionData?.auctionId}}</div>
+        <div class="view-count">
+          <i class="fas fa-eye"></i>
+          {{viewCount}} ნახვა
+        </div>
+      </div>
     </div>
 
     <!-- Timer and Price Section -->
