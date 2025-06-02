@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:3000' // Replace with your actual API URL
+  apiUrl: 'https://localhost:7268'  // ← point this to your ASP.NET Core base URL
 }; 

@@ -16,8 +16,14 @@ export class AuthService {
   private firstNameSubject = new BehaviorSubject<string>('');
   private userImageUrlSubject = new BehaviorSubject<string>('');
 
-  constructor(private http: HttpClient, private router: Router, private apiService: ApiService) {
-    this.currentUserSubject = new BehaviorSubject<any>(JSON.parse(localStorage.getItem('currentUser') || 'null'));
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private apiService: ApiService
+  ) {
+    this.currentUserSubject = new BehaviorSubject<any>(
+      JSON.parse(localStorage.getItem('currentUser') || 'null')
+    );
     this.currentUser = this.currentUserSubject.asObservable();
     this.checkAuthState();
   }
@@ -32,7 +38,9 @@ export class AuthService {
       this.isLoggedInSubject.next(true);
       this.firstNameSubject.next(localStorage.getItem('firstName') ?? 'User');
       const imageUrl = localStorage.getItem('userImageUrl');
-      this.userImageUrlSubject.next(this.apiService.getFullImageUrl(imageUrl));
+      this.userImageUrlSubject.next(
+        this.apiService.getFullImageUrl(imageUrl)
+      );
     } else {
       this.isLoggedInSubject.next(false);
       this.firstNameSubject.next('');
@@ -72,11 +80,12 @@ export class AuthService {
   async getUserId(): Promise<number | null> {
     const token = localStorage.getItem('token');
     if (!token) return null;
-    
+
     try {
       const base64Payload = token.split('.')[1];
       const payload = JSON.parse(atob(base64Payload));
-      const userIdClaim = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+      const userIdClaim =
+        payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
       return userIdClaim ? Number(userIdClaim) : null;
     } catch (err) {
       console.error('Failed to decode JWT payload:', err);
@@ -85,11 +94,20 @@ export class AuthService {
   }
 
   login(email: string, password: string) {
-    return this.http.post<any>(`${this.apiUrl}/auth/login`, { email, password })
-      .pipe(map(user => {
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        this.currentUserSubject.next(user);
-        return user;
-      }));
+    return this.http
+      .post<any>(`${this.apiUrl}/auth/login`, { email, password })
+      .pipe(
+        map((user) => {
+          localStorage.setItem('currentUser', JSON.stringify(user));
+          // assume your login API also returns 'token' and 'firstName' etc.
+          this.currentUserSubject.next(user);
+          return user;
+        })
+      );
   }
-} 
+
+  /** ← Add this method so SignalRService can read the raw token */
+  public getJwtToken(): string {
+    return localStorage.getItem('token') || '';
+  }
+}

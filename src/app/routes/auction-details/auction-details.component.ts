@@ -1,4 +1,16 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener, ApplicationRef, ComponentRef, createComponent, EnvironmentInjector, LOCALE_ID } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  HostListener,
+  ApplicationRef,
+  createComponent,
+  EnvironmentInjector,
+  LOCALE_ID,
+  ChangeDetectorRef    // ← import ChangeDetectorRef
+} from '@angular/core';
 import { AuctionsService } from '../../serices/auctions.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
@@ -7,6 +19,9 @@ import { ImageModalComponent } from '../../components/image-modal/image-modal.co
 import { BidService, BidOutputDto } from '../../services/bid.service';
 import { AuthService } from '../../services/auth.service';
 import { AuthDialogComponent } from '../../components/auth-dialog/auth-dialog.component';
+
+import { SignalRService, NewBidPayload } from '../../services/signalr.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-auction-details',
@@ -21,7 +36,7 @@ import { AuthDialogComponent } from '../../components/auth-dialog/auth-dialog.co
 })
 export class AuctionDetailsComponent implements OnInit, OnDestroy {
   @ViewChild('mainImage') mainImage!: ElementRef;
-  
+
   id!: number;
   data: any = { item: {}, currentPrice: 0, minimumBidIncrement: 0 };
   isDataLoading: boolean = true;
@@ -52,6 +67,8 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
   errorMessage: string = '';
   private timerInterval: any;
 
+  private bidSubscription!: Subscription;
+
   constructor(
     public _http: AuctionsService,
     private bidService: BidService,
@@ -59,9 +76,12 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
     private appRef: ApplicationRef,
-    private injector: EnvironmentInjector
+    private injector: EnvironmentInjector,
+    private signalR: SignalRService,
+    private cd: ChangeDetectorRef   // ← inject ChangeDetectorRef
+    
   ) {
-    this.route.params.subscribe(res => this.id = res['id']);
+    this.route.params.subscribe(res => (this.id = +res['id']));
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -73,7 +93,7 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
         this.nextImage();
       }
     }
-    
+
     if (event.key === 'Escape') {
       if (this.isFullscreen) {
         this.toggleFullscreen();
@@ -86,10 +106,73 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    // ───────────────────────────────────────────
+    // 1) Load auction details, existing bids, timer, etc.
     this.loadAuctionDetails();
     this.loadBids();
     this.startTimer();
+
+    // ───────────────────────────────────────────
+    // 2) Start the SignalR connection
+    try {
+      await this.signalR.startConnection();
+      console.log(
+        'SignalR: Connected – state is',
+        (this.signalR as any).hubConnection?.state ?? 'unknown'
+      );
+      // For debugging, expose the service on window (optional)
+      // @ts-ignore
+      window['signalRService'] = this.signalR;
+      console.log('✅ window.signalRService is now available');
+    } catch (err) {
+      console.error('Could not start SignalR:', err);
+      return;
+    }
+
+    // ───────────────────────────────────────────
+    // 3) Join the correct auction group
+    try {
+      await this.signalR.joinAuctionGroup(this.id);
+      console.log(`✓ Joined SignalR group auction-${this.id}`);
+    } catch (err) {
+      console.error(`Failed to join group auction-${this.id}:`, err);
+      return;
+    }
+
+    // ───────────────────────────────────────────
+    // 4) Subscribe to ReceiveNewBid and update UI
+    this.bidSubscription = this.signalR.bidReceived$.subscribe((payload: NewBidPayload) => {
+      // 4.1) Print raw payload
+      console.log('← ReceivedNewBid payload raw:', JSON.stringify(payload));
+
+      if (payload.auctionId === this.id) {
+        // 4.2) Insert the new bid at the front
+        this.bids.unshift({
+          bidId: 0,                     // placeholder; real ID comes from server if needed
+          auctionId: payload.auctionId,
+          bidderId: payload.bidderId,
+          bidderName: '',               // optionally fill if payload includes it
+          amount: payload.amount,
+          bidTime: new Date(payload.bidTime),
+          isWinning: true               // incoming bid is now winning
+        });
+
+        // ───────────────────────────────────────────
+        // 4.3) Log to confirm the array changed
+        console.log('➤ After unshift, bids =', this.bids);
+
+        // 4.4) Update current price so {{ data.currentPrice }} changes
+        this.data.currentPrice = payload.amount;
+
+        // 4.5) Recompute totals
+        this.totalBidsCount = this.bids.length;
+        this.calculateTotalIncrease();
+
+        // 4.6) Force Angular to update the template immediately
+        this.cd.detectChanges();
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -99,6 +182,13 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
     }
+
+    // ───────────────────────────────────────────
+    // Clean up SignalR subscription
+    if (this.bidSubscription) {
+      this.bidSubscription.unsubscribe();
+    }
+    this.signalR.leaveAuctionGroup(this.id).catch(() => {});
   }
 
   initializeViewCount(): void {
@@ -122,14 +212,14 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
   toggleFavorite(): void {
     const favoritesStr = localStorage.getItem('favorite_auctions') || '[]';
     const favorites = JSON.parse(favoritesStr);
-    
+
     if (this.isFavorite) {
       const index = favorites.indexOf(this.id);
       favorites.splice(index, 1);
     } else {
       favorites.push(this.id);
     }
-    
+
     localStorage.setItem('favorite_auctions', JSON.stringify(favorites));
     this.isFavorite = !this.isFavorite;
   }
@@ -143,9 +233,10 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
 
   previousImage(): void {
     if (this.data?.item?.imageUrls?.length > 1) {
-      this.currentImageIndex = this.currentImageIndex === 0 
-        ? this.data.item.imageUrls.length - 1 
-        : this.currentImageIndex - 1;
+      this.currentImageIndex =
+        this.currentImageIndex === 0
+          ? this.data.item.imageUrls.length - 1
+          : this.currentImageIndex - 1;
       this.selectedImageUrl = this._http.publicUrl + this.data.item.imageUrls[this.currentImageIndex];
     }
   }
@@ -166,15 +257,13 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
       this.zoomLevel -= 0.5;
     }
 
-    // Reset position when zooming out to 1x
     if (this.zoomLevel === 1) {
       this.mouseX = 50;
       this.mouseY = 50;
     } else {
-      // Center on current mouse position when zooming in
       const rect = this.mainImage.nativeElement.getBoundingClientRect();
-      const centerX = rect.left + rect.width/2;
-      const centerY = rect.top + rect.height/2;
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
       const x = ((event?.clientX || centerX) - rect.left) / rect.width * 100;
       const y = ((event?.clientY || centerY) - rect.top) / rect.height * 100;
       this.mouseX = x;
@@ -215,15 +304,9 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
   onMouseMove(event: MouseEvent): void {
     if (this.zoomLevel > 1) {
       const rect = this.mainImage.nativeElement.getBoundingClientRect();
-      
-      // Calculate mouse position as percentage of image dimensions
       const x = ((event.clientX - rect.left) / rect.width) * 100;
       const y = ((event.clientY - rect.top) / rect.height) * 100;
-      
-      // Calculate boundaries based on zoom level
       const maxOffset = (this.zoomLevel - 1) * 50;
-      
-      // Smooth movement with boundaries
       this.mouseX = Math.max(maxOffset, Math.min(100 - maxOffset, x));
       this.mouseY = Math.max(maxOffset, Math.min(100 - maxOffset, y));
     }
@@ -239,7 +322,6 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
 
   private formatDate(date: string): string {
     const d = new Date(date);
-    // Add 4 hours to match Georgia timezone
     d.setHours(d.getHours() + 4);
     return d.toISOString();
   }
@@ -248,7 +330,6 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
     this.isDataLoading = true;
     this._http.getAuctionById(this.id).subscribe({
       next: (res: any) => {
-        // Format dates to Georgia timezone
         if (res.startTime) {
           res.startTime = this.formatDate(res.startTime);
         }
@@ -273,9 +354,8 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
   }
 
   private loadBids(): void {
-    this.bidService.getAuctionBids(this.id).subscribe(bids => {
-      // Format bid dates to Georgia timezone
-      this.bids = bids.map(bid => {
+    this.bidService.getAuctionBids(this.id).subscribe((bids) => {
+      this.bids = bids.map((bid) => {
         const adjustedDate = new Date(bid.bidTime);
         adjustedDate.setHours(adjustedDate.getHours() + 4);
         return {
@@ -290,7 +370,7 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
 
   private calculateTotalIncrease(): void {
     if (this.bids.length > 0 && this.data?.startingPrice) {
-      const highestBid = Math.max(...this.bids.map(b => b.amount));
+      const highestBid = Math.max(...this.bids.map((b) => b.amount));
       this.totalBidIncrease = highestBid - this.data.startingPrice;
     } else {
       this.totalBidIncrease = 0;
@@ -306,7 +386,7 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
 
         if (distance < 0) {
           clearInterval(this.timerInterval);
-          this.loadAuctionDetails(); // Refresh to get updated status
+          this.loadAuctionDetails();
         }
       }
     }, 1000);
@@ -338,12 +418,12 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
       }
 
       const userId = await this.authService.getUserId();
-      
+
       if (!userId) {
         this.showAuthDialog();
         return;
       }
-      
+
       // Check if user is the seller
       if (this.data.seller?.id === userId) {
         throw new Error('თქვენ ვერ დადებთ ბიდს საკუთარ აუქციონზე');
@@ -354,47 +434,43 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
         throw new Error('თქვენ უკვე გაქვთ უმაღლესი ბიდი');
       }
 
-      const newBid = await this.bidService.placeBid({
-        auctionId: this.id,
-        amount: this.bidAmount
-      }).toPromise();
+      const newBid = await this.bidService
+        .placeBid({
+          auctionId: this.id,
+          amount: this.bidAmount
+        })
+        .toPromise();
 
       // Update data without full reload
       if (newBid) {
-        // Update current price
         this.data.currentPrice = this.bidAmount;
-        
-        // Add new bid to the list
+
         const adjustedDate = new Date();
         adjustedDate.setHours(adjustedDate.getHours() + 4);
-        
+
         this.bids.unshift({
           ...newBid,
           bidTime: adjustedDate
         });
 
-        // Update counts and totals
         this.totalBidsCount = this.bids.length;
         this.calculateTotalIncrease();
 
-        // Update minimum bid amount for next bid
         this.bidAmount = this.data.currentPrice + this.data.minimumBidIncrement;
       }
-      
+
       this.errorMessage = '';
-      
     } catch (error: any) {
       if (error?.status === 401) {
         this.showAuthDialog();
         return;
       }
-      
-      // Handle API error responses
+
       if (error?.status === 400) {
         const errorResponse = error.error;
-        if (errorResponse.error === "You are already the highest bidder.") {
+        if (errorResponse.error === 'You are already the highest bidder.') {
           this.errorMessage = 'თქვენ უკვე გაქვთ უმაღლესი ბიდი';
-        } else if (errorResponse.error.includes("Bid amount must be at least")) {
+        } else if (errorResponse.error.includes('Bid amount must be at least')) {
           const minAmount = errorResponse.error.match(/\d+(\.\d+)?/)[0];
           this.errorMessage = `მინიმალური ბიდის ოდენობაა ${minAmount}₾`;
         } else {
@@ -409,20 +485,15 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
   }
 
   private showAuthDialog(): void {
-    // Create the component
     const dialogComponentRef = createComponent(AuthDialogComponent, {
       environmentInjector: this.injector
     });
 
-    // Add to the DOM
     const { hostView } = dialogComponentRef;
     this.appRef.attachView(hostView);
-
-    // Get DOM element from component
     const domElem = (hostView as any).rootNodes[0];
     document.body.appendChild(domElem);
 
-    // Handle cleanup
     dialogComponentRef.instance.closeEvent.subscribe(() => {
       this.appRef.detachView(hostView);
       dialogComponentRef.destroy();
