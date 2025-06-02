@@ -20,6 +20,13 @@
         <option value="Furniture">ავეჯი</option>
       </select>
     </div>
+
+    <div class="filter-group checkbox-filter">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="showOnlyActive" (change)="onShowActiveChange($event)">
+        <span class="checkbox-text">მხოლოდ აქტიური აუქციონები</span>
+      </label>
+    </div>
   </div>
 
   <div class="auctions-grid">
@@ -27,8 +34,12 @@
       <div class="card-content-wrapper" (click)="navigateToAuction(auction.id)">
         <div class="card-image-container">
           <img [src]="_http.publicUrl + auction.imageUrl" alt="{{auction.title}}" class="card-image">
-          <div class="buy-now-badge">
-            ახლავე ყიდვა {{auction.buyNowPrice}}₾
+          <div class="status-badge" [ngClass]="getStatusClass(auction.status)">
+            {{auction.status === 'Pending' ? 'მოლოდინში' :
+              auction.status === 'Active' ? 'აქტიური' :
+              auction.status === 'Closed' ? 'დასრულებული' :
+              auction.status === 'Cancelled' ? 'გაუქმებული' : ''}}
+            {{auction.currentPrice}}₾
           </div>
         </div>
         
@@ -53,8 +64,8 @@
             <span class="detail-value">{{auction.currentPrice}}₾</span>
           </div>
 
-          <div class="countdown-row">
-            <div class="time-unit">
+          <div class="countdown-row" *ngIf="auction.status !== 'Closed' && auction.status !== 'Cancelled'">
+            <div class="time-unit" *ngIf="auction.timeLeft.days > 0">
               <span class="time-value">{{auction.timeLeft.days}}</span>
               <span class="time-label">დღე</span>
             </div>
@@ -75,7 +86,9 @@
       </div>
 
       <div class="card-footer">
-        <button class="bid-button" (click)="$event.stopPropagation()">ბიდის დადება</button>
+        <button class="bid-button" (click)="$event.stopPropagation()" [disabled]="auction.status !== 'Active'">
+          {{auction.status === 'Closed' || auction.status === 'Cancelled' ? 'დასრულებულია' : 'ბიდის დადება'}}
+        </button>
       </div>
     </div>
   </div>

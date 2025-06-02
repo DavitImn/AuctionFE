@@ -11,15 +11,13 @@ export class AuctionsService {
 
   constructor(private _http: HttpClient) { }
  
-  getAuctions()
+  getAuctions(endpoint: string = 'auctions')
   {
-    return this._http.get(`${this.apiUrl}/Auctions/auctions`)
+    return this._http.get(`${this.apiUrl}/Auctions/${endpoint}`)
   }
+
   getAuctionById(id: number)
   {
-
     return this._http.get(`${this.apiUrl}/Auctions/get-auction?auctionid=${id}`)
-
   }
-
 }

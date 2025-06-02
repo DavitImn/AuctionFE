@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuctionsService } from '../../serices/auctions.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -23,6 +23,9 @@ interface Auction {
   currentPrice: number;
   buyNowPrice: number;
   timeLeft: TimeLeft;
+  status: 'Pending' | 'Active' | 'Closed' | 'Cancelled';
+  startTime: string;
+  endTime: string;
 }
 
 @Component({
@@ -32,8 +35,11 @@ interface Auction {
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   auctions: Auction[] = [];
+  selectedStatus: string = 'all';
+  showOnlyActive: boolean = false;
+  private timerInterval: any;
 
   constructor(
     public _http: AuctionsService,
@@ -41,21 +47,48 @@ export class HomeComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this._http.getAuctions().subscribe(response => {
-      // Transform the API response to match our Auction interface
-      this.auctions = (response as any[]).map(item => ({
-        id: item.auctionId,
-        title: item.item.title,
-        description: item.item.description,
-        imageUrl: item.item.imageUrls[0], // Using first image as main
-        category: item.item.category,
-        condition: item.item.condition,
-        seller: item.item.seller.firstName,
-        startingPrice: item.startingPrice,
-        currentPrice: item.currentPrice,
-        buyNowPrice: item.currentPrice, // Assuming this is the buy now price
-        timeLeft: this.calculateTimeLeft(item.endTime)
-      }));
+    this.loadAuctions();
+    // Update timers every second
+    this.timerInterval = setInterval(() => {
+      this.updateAllTimers();
+    }, 1000);
+  }
+
+  ngOnDestroy() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
+  }
+
+  updateAllTimers() {
+    this.auctions = this.auctions.map(auction => ({
+      ...auction,
+      timeLeft: this.calculateTimeLeft(auction.endTime)
+    }));
+  }
+
+  loadAuctions() {
+    const endpoint = this.showOnlyActive ? 'auctions' : 'all-auctions';
+    this._http.getAuctions(endpoint).subscribe(response => {
+      // Filter out deleted auctions and transform the API response
+      this.auctions = (response as any[])
+        .filter(item => !item.isDeleted)
+        .map(item => ({
+          id: item.auctionId,
+          title: item.item.title,
+          description: item.item.description,
+          imageUrl: item.item.imageUrls[0], // Using first image as main
+          category: item.item.category,
+          condition: item.item.condition,
+          seller: item.item.seller.firstName,
+          startingPrice: item.startingPrice,
+          currentPrice: item.currentPrice,
+          buyNowPrice: item.currentPrice,
+          timeLeft: this.calculateTimeLeft(item.endTime),
+          status: item.status,
+          startTime: item.startTime,
+          endTime: item.endTime
+        }));
     });
   }
 
@@ -63,6 +96,16 @@ export class HomeComponent implements OnInit {
     const end = new Date(endTime).getTime();
     const now = new Date().getTime();
     const distance = end - now;
+
+    // If auction has ended, return all zeros
+    if (distance < 0) {
+      return {
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0
+      };
+    }
 
     return {
       days: Math.floor(distance / (1000 * 60 * 60 * 24)),
@@ -82,22 +125,32 @@ export class HomeComponent implements OnInit {
     // 'default' will use original order
   }
 
+  onStatusChange(event: any) {
+    this.selectedStatus = event.target.value;
+    this.loadAuctions();
+  }
+
   onCategoryChange(event: any) {
     const categoryValue = event.target.value;
     this._http.getAuctions().subscribe(response => {
-      const allAuctions = (response as any[]).map(item => ({
-        id: item.auctionId,
-        title: item.item.title,
-        description: item.item.description,
-        imageUrl: item.item.imageUrls[0],
-        category: item.item.category,
-        condition: item.item.condition,
-        seller: item.item.seller.firstName,
-        startingPrice: item.startingPrice,
-        currentPrice: item.currentPrice,
-        buyNowPrice: item.currentPrice,
-        timeLeft: this.calculateTimeLeft(item.endTime)
-      }));
+      const allAuctions = (response as any[])
+        .filter(item => !item.isDeleted)
+        .map(item => ({
+          id: item.auctionId,
+          title: item.item.title,
+          description: item.item.description,
+          imageUrl: item.item.imageUrls[0],
+          category: item.item.category,
+          condition: item.item.condition,
+          seller: item.item.seller.firstName,
+          startingPrice: item.startingPrice,
+          currentPrice: item.currentPrice,
+          buyNowPrice: item.currentPrice,
+          timeLeft: this.calculateTimeLeft(item.endTime),
+          status: item.status,
+          startTime: item.startTime,
+          endTime: item.endTime
+        }));
 
       if (categoryValue === 'all') {
         this.auctions = allAuctions;
@@ -109,8 +162,44 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'Pending': return 'status-pending';
+      case 'Active': return 'status-active';
+      case 'Closed': return 'status-closed';
+      case 'Cancelled': return 'status-cancelled';
+      default: return '';
+    }
+  }
+
   navigateToAuction(id: number) {
     console.log('Navigating to auction:', id);
     this.router.navigate(['/details', id]);
+  }
+
+  onShowActiveChange(event: any) {
+    this.showOnlyActive = event.target.checked;
+    const endpoint = this.showOnlyActive ? 'auctions' : 'all-auctions';
+    this._http.getAuctions(endpoint).subscribe(response => {
+      // Filter out deleted auctions and transform the API response
+      this.auctions = (response as any[])
+        .filter(item => !item.isDeleted)
+        .map(item => ({
+          id: item.auctionId,
+          title: item.item.title,
+          description: item.item.description,
+          imageUrl: item.item.imageUrls[0],
+          category: item.item.category,
+          condition: item.item.condition,
+          seller: item.item.seller.firstName,
+          startingPrice: item.startingPrice,
+          currentPrice: item.currentPrice,
+          buyNowPrice: item.currentPrice,
+          timeLeft: this.calculateTimeLeft(item.endTime),
+          status: item.status,
+          startTime: item.startTime,
+          endTime: item.endTime
+        }));
+    });
   }
 }
