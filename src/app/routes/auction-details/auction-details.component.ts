@@ -19,14 +19,16 @@ import { ImageModalComponent } from '../../components/image-modal/image-modal.co
 import { BidService, BidOutputDto } from '../../services/bid.service';
 import { AuthService } from '../../services/auth.service';
 import { AuthDialogComponent } from '../../components/auth-dialog/auth-dialog.component';
+import { BuyNowDialogComponent } from '../../components/buy-now-dialog/buy-now-dialog.component';
 
 import { SignalRService, NewBidPayload } from '../../services/signalr.service';
 import { Subscription } from 'rxjs';
+import { BuyNowService } from '../../services/buy-now.service';
 
 @Component({
   selector: 'app-auction-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, ImageModalComponent],
+  imports: [CommonModule, FormsModule, ImageModalComponent, BuyNowDialogComponent],
   templateUrl: './auction-details.component.html',
   styleUrl: './auction-details.component.css',
   providers: [
@@ -68,6 +70,7 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
   private timerInterval: any;
 
   private bidSubscription!: Subscription;
+  showBuyNowDialog: boolean = false;
 
   constructor(
     public _http: AuctionsService,
@@ -78,8 +81,8 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
     private appRef: ApplicationRef,
     private injector: EnvironmentInjector,
     private signalR: SignalRService,
-    private cd: ChangeDetectorRef   // ← inject ChangeDetectorRef
-    
+    private cd: ChangeDetectorRef,   // ← inject ChangeDetectorRef
+    private buyNowService: BuyNowService,
   ) {
     this.route.params.subscribe(res => (this.id = +res['id']));
   }
@@ -304,30 +307,40 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
     return d.toISOString();
   }
 
-  private loadAuctionDetails(): void {
-    this.isDataLoading = true;
-    this._http.getAuctionById(this.id).subscribe({
-      next: (res: any) => {
-        if (res.startTime) {
-          res.startTime = this.formatDate(res.startTime);
+  private loadAuctionDetails(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.isDataLoading = true;
+      this._http.getAuctionById(this.id).subscribe({
+        next: (res: any) => {
+          if (res.startTime) {
+            res.startTime = this.formatDate(res.startTime);
+          }
+          if (res.endTime) {
+            res.endTime = this.formatDate(res.endTime);
+          }
+          this.data = res;
+          this.bidAmount = this.data.currentPrice + this.data.minimumBidIncrement;
+          
+          // Calculate buy now price if not set (temporary)
+          if (!this.data.buyNowPrice) {
+            this.data.buyNowPrice = this.data.currentPrice * 1.5;
+          }
+
+          if (this.data?.item?.imageUrls?.length > 0) {
+            this.selectedImageUrl = this._http.publicUrl + this.data.item.imageUrls[0];
+          }
+          this.startCountdown();
+          this.initializeViewCount();
+          this.checkFavoriteStatus();
+          this.isDataLoading = false;
+          resolve();
+        },
+        error: (error) => {
+          console.error('Failed to load auction details:', error);
+          this.isDataLoading = false;
+          reject(error);
         }
-        if (res.endTime) {
-          res.endTime = this.formatDate(res.endTime);
-        }
-        this.data = res;
-        this.bidAmount = this.data.currentPrice + this.data.minimumBidIncrement;
-        if (this.data?.item?.imageUrls?.length > 0) {
-          this.selectedImageUrl = this._http.publicUrl + this.data.item.imageUrls[0];
-        }
-        this.startCountdown();
-        this.initializeViewCount();
-        this.checkFavoriteStatus();
-        this.isDataLoading = false;
-      },
-      error: (error) => {
-        console.error('Failed to load auction details:', error);
-        this.isDataLoading = false;
-      }
+      });
     });
   }
 
@@ -446,6 +459,61 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  async confirmBuyNow(): Promise<void> {
+    if (!this.authService.isAuthenticated()) {
+      this.showAuthDialog();
+      return;
+    }
+
+    const userId = await this.authService.getUserId();
+    if (!userId) {
+      this.showAuthDialog();
+      return;
+    }
+
+    // Check if user is the seller
+    if (this.data.seller?.id === userId) {
+      this.errorMessage = 'თქვენ ვერ იყიდით საკუთარ აუქციონს';
+      return;
+    }
+
+    this.showBuyNowDialog = true;
+  }
+
+  async handleBuyNowConfirm(): Promise<void> {
+    this.showBuyNowDialog = false;
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    try {
+      await this.buyNowService
+        .buyNow({
+          auctionId: this.id,
+          price: this.data.buyNowPrice
+        })
+        .toPromise();
+
+      // Reload auction details to get updated status
+      await this.loadAuctionDetails();
+      
+      // Show success message
+      alert('წარმატებული შესყიდვა! აუქციონი დასრულებულია.');
+    } catch (error: any) {
+      if (error?.status === 401) {
+        this.showAuthDialog();
+        return;
+      }
+
+      this.errorMessage = error?.error?.error || 'დაფიქსირდა შეცდომა ყიდვისას';
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  closeBuyNowDialog(): void {
+    this.showBuyNowDialog = false;
   }
 
   private showAuthDialog(): void {

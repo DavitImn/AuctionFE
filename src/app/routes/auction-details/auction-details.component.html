@@ -141,30 +141,48 @@
           </div>
 
           <div class="bid-form" *ngIf="data?.status === 'Active'">
-            <div class="input-group">
-              <input 
-                type="number" 
-                [(ngModel)]="bidAmount" 
-                [min]="data?.currentPrice + data?.minimumBidIncrement"
-                [step]="data?.minimumBidIncrement"
-                class="bid-input"
-                placeholder="შეიყვანეთ თანხა"
+            <div class="bid-actions">
+              <div class="input-group">
+                <input 
+                  type="number" 
+                  [(ngModel)]="bidAmount" 
+                  [min]="data?.currentPrice + data?.minimumBidIncrement"
+                  [step]="data?.minimumBidIncrement"
+                  class="bid-input"
+                  placeholder="შეიყვანეთ თანხა"
+                >
+                <span class="currency">₾</span>
+              </div>
+              
+              <button 
+                class="bid-button" 
+                (click)="placeBid()" 
+                [disabled]="isLoading || bidAmount < (data?.currentPrice + data?.minimumBidIncrement)"
               >
-              <span class="currency">₾</span>
+                <i class="fas fa-gavel"></i>
+                <span *ngIf="!isLoading">ბიდის დადება</span>
+                <span *ngIf="isLoading">გთხოვთ დაელოდოთ...</span>
+              </button>
             </div>
-            
+
             <div class="min-bid-info">
               მინიმალური ბიდი: {{data?.minimumBidIncrement}}₾
             </div>
 
-            <button 
-              class="bid-button" 
-              (click)="placeBid()" 
-              [disabled]="isLoading || bidAmount < (data?.currentPrice + data?.minimumBidIncrement)"
-            >
-              <span *ngIf="!isLoading">ბიდის დადება</span>
-              <span *ngIf="isLoading">გთხოვთ დაელოდოთ...</span>
-            </button>
+            <div class="buy-now-section" *ngIf="data?.buyNowPrice">
+              <div class="buy-now-info">
+                <span class="label">ახლავე ყიდვის ფასი:</span>
+                <span class="price">{{data?.buyNowPrice}}₾</span>
+              </div>
+              <button 
+                class="buy-now-button" 
+                (click)="confirmBuyNow()"
+                [disabled]="isLoading"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                <span>ახლავე ყიდვა</span>
+              </button>
+            </div>
 
             <div class="error-message" *ngIf="errorMessage">
               {{errorMessage}}
@@ -254,3 +272,11 @@
   [altText]="data?.item?.title"
   (close)="closeImageModal()"
 ></app-image-modal>
+
+<app-buy-now-dialog
+  *ngIf="showBuyNowDialog"
+  [itemTitle]="data?.item?.title"
+  [price]="data?.buyNowPrice"
+  (confirm)="handleBuyNowConfirm()"
+  (close)="closeBuyNowDialog()"
+></app-buy-now-dialog>

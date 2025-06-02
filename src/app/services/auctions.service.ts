@@ -37,4 +37,8 @@ export class AuctionsService {
   getAuctions(): Observable<AuctionData[]> {
     return this.httpService.get<AuctionData[]>('/api/auctions');
   }
+
+  buyNow(auctionId: number): Observable<any> {
+    return this.httpService.post(`/api/auctions/${auctionId}/buy-now`, {});
+  }
 } 

@@ -617,60 +617,108 @@
   margin-top: 20px;
 }
 
+.bid-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: stretch;
+}
+
 .input-group {
+  flex: 3;
   position: relative;
-  margin-bottom: 10px;
+  margin-bottom: 0;
+}
+
+.bid-button {
+  flex: 1;
+  min-width: 120px;
+  white-space: nowrap;
+  height: auto;
+  margin: 0;
+  padding: 0 15px;
 }
 
 .bid-input {
   width: 100%;
-  padding: 12px;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-}
-
-.bid-input:focus {
-  outline: none;
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+  height: 50px;
+  padding: 12px 35px 12px 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 500;
 }
 
 .currency {
   position: absolute;
-  right: 12px;
+  right: 15px;
   top: 50%;
   transform: translateY(-50%);
   color: #666;
+  font-size: 18px;
+  font-weight: 500;
 }
 
-.min-bid-info {
-  font-size: 14px;
-  color: #666;
+.buy-now-section {
+  margin-top: 25px;
+  padding: 20px;
+  background: #f0f7ff;
+  border-radius: 12px;
+  border: 2px solid #e3f2fd;
+}
+
+.buy-now-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 15px;
+  padding: 0 10px;
 }
 
-.bid-button {
+.buy-now-info .label {
+  font-size: 18px;
+  color: #1976D2;
+  font-weight: 500;
+}
+
+.buy-now-info .price {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1976D2;
+}
+
+.buy-now-button {
   width: 100%;
-  padding: 12px;
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  padding: 15px 20px;
+  background: linear-gradient(135deg, #2196F3, #1976D2);
   color: white;
   border: none;
-  border-radius: 10px;
-  font-weight: 600;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
 }
 
-.bid-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #6d28d9, #5b21b6);
+.buy-now-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1976D2, #1565C0);
   transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
 }
 
-.bid-button:disabled {
-  background: #cbd5e0;
+.buy-now-button i {
+  font-size: 20px;
+}
+
+.buy-now-button:disabled {
+  background: #cccccc;
   cursor: not-allowed;
+  transform: none;
 }
 
 .error-message {
@@ -970,5 +1018,106 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+  width: 100%;
+}
+
+.bid-button,
+.buy-now-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.bid-button {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+}
+
+.bid-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #45a049, #3d8b40);
+  transform: translateY(-1px);
+}
+
+.buy-now-button {
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+  color: white;
+}
+
+.buy-now-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1976D2, #1565C0);
+  transform: translateY(-1px);
+}
+
+.bid-button:disabled,
+.buy-now-button:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.bid-button i,
+.buy-now-button i {
+  font-size: 18px;
+}
+
+/* Update existing input-group styles */
+.input-group {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.bid-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.currency {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+}
+
+.min-bid-info {
+  color: #666;
+  font-size: 14px;
+  margin: 10px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .bid-actions {
+    flex-direction: column;
+  }
+
+  .bid-button {
+    width: 100%;
+    margin-top: 10px;
+    height: 50px;
+  }
+
+  .input-group {
+    width: 100%;
+  }
 }
 
