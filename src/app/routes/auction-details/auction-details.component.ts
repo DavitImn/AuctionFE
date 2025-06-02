@@ -1,13 +1,17 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener, ApplicationRef, ComponentRef, createComponent, EnvironmentInjector } from '@angular/core';
 import { AuctionsService } from '../../serices/auctions.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ImageModalComponent } from '../../components/image-modal/image-modal.component';
+import { BidService, BidOutputDto } from '../../services/bid.service';
+import { AuthService } from '../../services/auth.service';
+import { AuthDialogComponent } from '../../components/auth-dialog/auth-dialog.component';
 
 @Component({
   selector: 'app-auction-details',
   standalone: true,
-  imports: [CommonModule, ImageModalComponent],
+  imports: [CommonModule, FormsModule, ImageModalComponent],
   templateUrl: './auction-details.component.html',
   styleUrl: './auction-details.component.css'
 })
@@ -15,7 +19,8 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
   @ViewChild('mainImage') mainImage!: ElementRef;
   
   id!: number;
-  data: any;
+  data: any = { item: {}, currentPrice: 0, minimumBidIncrement: 0 };
+  isDataLoading: boolean = true;
   selectedImageUrl: string = '';
   countdown: string = '';
   currentImageIndex: number = 0;
@@ -35,8 +40,23 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
 
   auctionDetails: any;
   selectedImage: string | null = null;
+  bids: BidOutputDto[] = [];
+  bidAmount: number = 0;
+  totalBidsCount: number = 0;
+  totalBidIncrease: number = 0;
+  isLoading: boolean = false;
+  errorMessage: string = '';
+  private timerInterval: any;
 
-  constructor(public _http: AuctionsService, private route: ActivatedRoute) {
+  constructor(
+    public _http: AuctionsService,
+    private bidService: BidService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private authService: AuthService,
+    private appRef: ApplicationRef,
+    private injector: EnvironmentInjector
+  ) {
     this.route.params.subscribe(res => this.id = res['id']);
   }
 
@@ -63,20 +83,17 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this._http.getAuctionById(this.id).subscribe(res => {
-      this.data = res;
-      if (this.data?.item?.imageUrls?.length > 0) {
-        this.selectedImageUrl = this._http.publicUrl + this.data.item.imageUrls[0];
-      }
-      this.startCountdown();
-      this.initializeViewCount();
-      this.checkFavoriteStatus();
-    });
+    this.loadAuctionDetails();
+    this.loadBids();
+    this.startTimer();
   }
 
   ngOnDestroy(): void {
     if (this.countdownInterval) {
       clearInterval(this.countdownInterval);
+    }
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
     }
   }
 
@@ -214,5 +231,157 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
 
   closeImageModal() {
     this.selectedImage = null;
+  }
+
+  private loadAuctionDetails(): void {
+    this.isDataLoading = true;
+    this._http.getAuctionById(this.id).subscribe({
+      next: (res) => {
+        this.data = res;
+        this.bidAmount = this.data.currentPrice + this.data.minimumBidIncrement;
+        if (this.data?.item?.imageUrls?.length > 0) {
+          this.selectedImageUrl = this._http.publicUrl + this.data.item.imageUrls[0];
+        }
+        this.startCountdown();
+        this.initializeViewCount();
+        this.checkFavoriteStatus();
+        this.isDataLoading = false;
+      },
+      error: (error) => {
+        console.error('Failed to load auction details:', error);
+        this.isDataLoading = false;
+      }
+    });
+  }
+
+  private loadBids(): void {
+    this.bidService.getAuctionBids(this.id).subscribe(bids => {
+      this.bids = bids;
+      this.totalBidsCount = bids.length;
+      this.calculateTotalIncrease();
+    });
+  }
+
+  private calculateTotalIncrease(): void {
+    if (this.bids.length > 0) {
+      const highestBid = Math.max(...this.bids.map(b => b.amount));
+      this.totalBidIncrease = highestBid - this.data.startingPrice;
+    }
+  }
+
+  private startTimer(): void {
+    this.timerInterval = setInterval(() => {
+      if (this.data?.endTime) {
+        const now = new Date().getTime();
+        const end = new Date(this.data.endTime).getTime();
+        const distance = end - now;
+
+        if (distance < 0) {
+          clearInterval(this.timerInterval);
+          this.loadAuctionDetails(); // Refresh to get updated status
+        }
+      }
+    }, 1000);
+  }
+
+  async placeBid(): Promise<void> {
+    if (!this.authService.isAuthenticated()) {
+      this.showAuthDialog();
+      return;
+    }
+
+    if (this.isLoading) return;
+
+    try {
+      this.isLoading = true;
+      this.errorMessage = '';
+
+      // Client-side validations
+      if (!this.data || !this.bidAmount) {
+        throw new Error('გთხოვთ შეიყვანოთ ბიდის თანხა');
+      }
+
+      if (this.bidAmount <= this.data.currentPrice) {
+        throw new Error('ბიდი უნდა იყოს მიმდინარე ფასზე მეტი');
+      }
+
+      if (this.bidAmount < this.data.currentPrice + this.data.minimumBidIncrement) {
+        throw new Error(`მინიმალური ბიდის ოდენობაა ${this.data.minimumBidIncrement}₾`);
+      }
+
+      const userId = await this.authService.getUserId();
+      
+      if (!userId) {
+        this.showAuthDialog();
+        return;
+      }
+      
+      // Check if user is the seller
+      if (this.data.seller?.id === userId) {
+        throw new Error('თქვენ ვერ დადებთ ბიდს საკუთარ აუქციონზე');
+      }
+
+      // Check if user has the last bid
+      if (this.bids.length > 0 && this.bids[0].bidderId === userId) {
+        throw new Error('თქვენ უკვე გაქვთ უმაღლესი ბიდი');
+      }
+
+      await this.bidService.placeBid({
+        auctionId: this.id,
+        amount: this.bidAmount
+      }).toPromise();
+
+      // Refresh data on success
+      await Promise.all([
+        this.loadAuctionDetails(),
+        this.loadBids()
+      ]);
+      
+      this.errorMessage = '';
+      
+    } catch (error: any) {
+      if (error?.status === 401) {
+        this.showAuthDialog();
+        return;
+      }
+      
+      // Handle API error responses
+      if (error?.status === 400) {
+        const errorResponse = error.error;
+        if (errorResponse.error === "You are already the highest bidder.") {
+          this.errorMessage = 'თქვენ უკვე გაქვთ უმაღლესი ბიდი';
+        } else if (errorResponse.error.includes("Bid amount must be at least")) {
+          const minAmount = errorResponse.error.match(/\d+(\.\d+)?/)[0];
+          this.errorMessage = `მინიმალური ბიდის ოდენობაა ${minAmount}₾`;
+        } else {
+          this.errorMessage = errorResponse.error || 'დაფიქსირდა შეცდომა ბიდის დადებისას';
+        }
+      } else {
+        this.errorMessage = error.message || 'დაფიქსირდა შეცდომა';
+      }
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private showAuthDialog(): void {
+    // Create the component
+    const dialogComponentRef = createComponent(AuthDialogComponent, {
+      environmentInjector: this.injector
+    });
+
+    // Add to the DOM
+    const { hostView } = dialogComponentRef;
+    this.appRef.attachView(hostView);
+
+    // Get DOM element from component
+    const domElem = (hostView as any).rootNodes[0];
+    document.body.appendChild(domElem);
+
+    // Handle cleanup
+    dialogComponentRef.instance.closeEvent.subscribe(() => {
+      this.appRef.detachView(hostView);
+      dialogComponentRef.destroy();
+    });
   }
 }

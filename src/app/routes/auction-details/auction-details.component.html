@@ -1,10 +1,18 @@
+<!-- Loading state -->
+<div class="loading-overlay" *ngIf="isDataLoading">
+  <div class="loading-spinner">
+    <div class="spinner"></div>
+    <span>იტვირთება...</span>
+  </div>
+</div>
+
 <!-- Normal view -->
-<div class="auction-details-container" [class.hidden]="isFullscreen">
+<div class="auction-details-container" [class.hidden]="isFullscreen || isDataLoading">
   <div class="breadcrumb">
     <a href="/home">მთავარი</a> → <a href="/pages">გვერდები</a> → <span>ავტომობილები</span>
   </div>
 
-  <div class="main-content">
+  <div class="main-content" *ngIf="data">
     <div class="image-section">
       <div class="main-image-container">
         <div class="image-wrapper" 
@@ -14,13 +22,13 @@
           <img 
             #mainImage
             [src]="selectedImageUrl" 
-            alt="{{data?.item?.title}}" 
+            [alt]="data?.item?.title || ''" 
             class="main-image"
             [style.transform]="zoomLevel > 1 ? 'scale(' + zoomLevel + ') translate(' + (50 - mouseX) + '%, ' + (50 - mouseY) + '%)' : 'none'"
           />
         </div>
         
-        <div class="image-controls" [class.hidden]="!data?.item?.imageUrls?.length">
+        <div class="image-controls" *ngIf="data?.item?.imageUrls?.length">
           <button class="nav-btn prev" (click)="previousImage()" *ngIf="data?.item?.imageUrls?.length > 1">
             <i class="fas fa-chevron-left"></i>
           </button>
@@ -42,7 +50,7 @@
         </div>
       </div>
 
-      <div class="thumbnail-row">
+      <div class="thumbnail-row" *ngIf="data?.item?.imageUrls?.length">
         <img
           *ngFor="let img of data?.item?.imageUrls; let i = index"
           [src]="_http.publicUrl + img"
@@ -57,9 +65,9 @@
         <div class="location">
           <i class="fas fa-map-marker-alt"></i> თბილისი
         </div>
-        <div class="seller">
-          <i class="fas fa-user"></i> {{data?.item?.seller?.firstName}}<br />
-          {{data?.item?.seller?.email}}
+        <div class="seller" *ngIf="data?.seller">
+          <i class="fas fa-user"></i> {{data?.seller?.firstName}}<br />
+          {{data?.seller?.email}}
         </div>
       </div>
     </div>
@@ -67,7 +75,7 @@
     <div class="details-section" [class.hidden]="isFullscreen">
       <div class="header-section">
         <div class="title-wrapper">
-          <h2>{{data.item.title}}</h2>
+          <h2>{{data?.item?.title}}</h2>
           <div class="title-border"></div>
         </div>
         <button class="favorite-btn" (click)="toggleFavorite()" [class.active]="isFavorite">
@@ -78,7 +86,7 @@
       <div class="price-section">
         <div class="current-price">
           <span class="label">მიმდინარე ფასი</span>
-          <span class="amount">{{data.currentPrice}}₾</span>
+          <span class="amount">{{data?.currentPrice}}₾</span>
         </div>
         <div class="price-details">
           <div class="detail-row">
@@ -87,7 +95,7 @@
           </div>
           <div class="detail-row">
             <span>მინიმალური ბიჯი</span>
-            <span>{{data.minimumBidIncrement}}₾</span>
+            <span>{{data?.minimumBidIncrement}}₾</span>
           </div>
         </div>
       </div>
@@ -95,15 +103,15 @@
       <div class="auction-info">
         <div class="info-row date-info">
           <strong>დაწყება:</strong> 
-          <span>{{data.startTime | date:'yyyy-MM-dd HH:mm'}}</span>
+          <span>{{data?.startTime | date:'yyyy-MM-dd HH:mm'}}</span>
         </div>
         <div class="info-row date-info">
           <strong>დასრულება:</strong> 
-          <span>{{data.endTime | date:'yyyy-MM-dd HH:mm'}}</span>
+          <span>{{data?.endTime | date:'yyyy-MM-dd HH:mm'}}</span>
         </div>
         <div class="info-row bid-info">
           <strong>დადებული ბიდები:</strong> 
-          <span>{{data.bidCount}}</span>
+          <span>{{data?.bidCount}}</span>
         </div>
       </div>
 
@@ -130,34 +138,83 @@
       </div>
 
       <div class="bid-section">
-        <div class="bid-input-group">
-          <input type="number" class="bid-input" placeholder="შეიყვანეთ თანხა" />
-          <button class="btn-bid">
-            <i class="fas fa-gavel"></i> ბიდის დადება
-          </button>
-        </div>
-        <div class="bid-actions">
-          <button class="buy-now-btn">
-            <i class="fas fa-shopping-cart"></i> ახლავე ყიდვა
-          </button>
-          <button class="add-watchlist-btn">
-            <i class="fas fa-star"></i> სიაში დამატება
-          </button>
-        </div>
-      </div>
+        <div class="bid-info">
+          <div class="current-price">
+            <span class="label">მიმდინარე ფასი:</span>
+            <span class="value">{{data?.currentPrice}}₾</span>
+          </div>
 
-      <div class="auction-metrics">
-        <div class="metric">
-          <span class="value">{{data.bidCount}}</span>
-          <span class="label">აქტიური ბიდები</span>
+          <div class="bid-form" *ngIf="data?.status === 'Active'">
+            <div class="input-group">
+              <input 
+                type="number" 
+                [(ngModel)]="bidAmount" 
+                [min]="data?.currentPrice + data?.minimumBidIncrement"
+                [step]="data?.minimumBidIncrement"
+                class="bid-input"
+                placeholder="შეიყვანეთ თანხა"
+              >
+              <span class="currency">₾</span>
+            </div>
+            
+            <div class="min-bid-info">
+              მინიმალური ბიდი: {{data?.minimumBidIncrement}}₾
+            </div>
+
+            <button 
+              class="bid-button" 
+              (click)="placeBid()" 
+              [disabled]="isLoading || bidAmount < (data?.currentPrice + data?.minimumBidIncrement)"
+            >
+              <span *ngIf="!isLoading">ბიდის დადება</span>
+              <span *ngIf="isLoading">გთხოვთ დაელოდოთ...</span>
+            </button>
+
+            <div class="error-message" *ngIf="errorMessage">
+              {{errorMessage}}
+            </div>
+          </div>
         </div>
-        <div class="metric">
-          <span class="value">{{viewCount}}</span>
-          <span class="label">ნახვები</span>
+
+        <div class="auction-metrics">
+          <div class="metric">
+            <div class="metric-header">
+              <span class="value">აქტიური ბიდი</span>
+              <span *ngIf="bids && bids.length > 0" class="last-bidder">
+                {{bids[0].bidderName}} - {{bids[0].bidTime | date:'HH:mm:ss'}}
+              </span>
+            </div>
+            <span class="label">{{data?.bidCount}}</span>
+          </div>
+          <div class="metric">
+            <span class="value">{{viewCount}}</span>
+            <span class="label">ნახვები</span>
+          </div>
+          <div class="metric">
+            <div class="total-bids">
+              <span class="increment">+{{totalBidIncrease}}₾ Total</span>
+              <span class="count">{{totalBidsCount}} bids</span>
+            </div>
+            <span class="label">ჯამური ბიდები</span>
+          </div>
         </div>
-        <div class="metric">
-          <span class="value">{{data.totalBids || 0}}</span>
-          <span class="label">ჯამური ბიდები</span>
+
+        <div class="bids-history">
+          <h3>ბიდების ისტორია</h3>
+          <div class="bid-list">
+            <div class="bid-item" *ngFor="let bid of bids">
+              <div class="bidder-info">
+                <span class="bidder-name">{{bid.bidderName}}</span>
+                <span class="bid-amount">{{bid.amount}}₾</span>
+              </div>
+              <div class="bid-time">
+                {{bid.bidTime | date:'dd/MM/yyyy HH:mm:ss'}}
+              </div>
+            </div>
+            <div class="no-bids" *ngIf="bids.length === 0">
+              ჯერ არ არის ბიდები
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -171,12 +228,12 @@
       <img 
         #mainImage
         [src]="selectedImageUrl" 
-        alt="{{data?.item?.title}}" 
+        [alt]="data?.item?.title || ''" 
         class="main-image"
       />
     </div>
     
-    <div class="image-controls" [class.hidden]="!data?.item?.imageUrls?.length">
+    <div class="image-controls" *ngIf="data?.item?.imageUrls?.length">
       <button class="nav-btn prev" (click)="previousImage()" *ngIf="data?.item?.imageUrls?.length > 1">
         <i class="fas fa-chevron-left"></i>
       </button>
@@ -197,6 +254,6 @@
 <app-image-modal
   *ngIf="selectedImage"
   [imageUrl]="selectedImage"
-  [altText]="auctionDetails?.item?.title"
+  [altText]="data?.item?.title"
   (close)="closeImageModal()"
 ></app-image-modal>
