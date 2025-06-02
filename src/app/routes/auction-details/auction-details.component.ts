@@ -122,14 +122,23 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
           // Get the latest bid data from the server to ensure we have complete information
           this.bidService.getAuctionBids(this.id).subscribe(bids => {
             if (bids.length > 0) {
-              const latestBid = bids[0]; // Server returns bids in descending order
+              // Convert all bid times to Georgia timezone
+              this.bids = bids.map(bid => {
+                const utcDate = new Date(bid.bidTime);
+                // Convert to Georgia timezone (UTC+4)
+                const georgiaDate = new Date(utcDate.getTime() + (4 * 60 * 60 * 1000));
+                return {
+                  ...bid,
+                  bidTime: georgiaDate
+                };
+              });
+
+              const latestBid = this.bids[0]; // Use our converted bids array
               
               // Update current price
               this.data.currentPrice = latestBid.amount;
               
-              // Update bids array with complete information
-              this.bids = bids;
-              this.totalBidsCount = bids.length;
+              this.totalBidsCount = this.bids.length;
               this.calculateTotalIncrease();
               
               // Update next minimum bid
@@ -323,13 +332,14 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
   }
 
   private loadBids(): void {
-    this.bidService.getAuctionBids(this.id).subscribe((bids) => {
-      this.bids = bids.map((bid) => {
-        const adjustedDate = new Date(bid.bidTime);
-        adjustedDate.setHours(adjustedDate.getHours() + 4);
+    this.bidService.getAuctionBids(this.id).subscribe(bids => {
+      this.bids = bids.map(bid => {
+        const utcDate = new Date(bid.bidTime);
+        // Convert to Georgia timezone (UTC+4)
+        const georgiaDate = new Date(utcDate.getTime() + (4 * 60 * 60 * 1000));
         return {
           ...bid,
-          bidTime: adjustedDate
+          bidTime: georgiaDate
         };
       });
       this.totalBidsCount = bids.length;
