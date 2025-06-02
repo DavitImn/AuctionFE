@@ -107,71 +107,40 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    // ───────────────────────────────────────────
-    // 1) Load auction details, existing bids, timer, etc.
+    // Load initial data
     this.loadAuctionDetails();
     this.loadBids();
     this.startTimer();
 
-    // ───────────────────────────────────────────
-    // 2) Start the SignalR connection
-    try {
-      await this.signalR.startConnection();
-      console.log(
-        'SignalR: Connected – state is',
-        (this.signalR as any).hubConnection?.state ?? 'unknown'
-      );
-      // For debugging, expose the service on window (optional)
-      // @ts-ignore
-      window['signalRService'] = this.signalR;
-      console.log('✅ window.signalRService is now available');
-    } catch (err) {
-      console.error('Could not start SignalR:', err);
-      return;
-    }
-
-    // ───────────────────────────────────────────
-    // 3) Join the correct auction group
-    try {
-      await this.signalR.joinAuctionGroup(this.id);
-      console.log(`✓ Joined SignalR group auction-${this.id}`);
-    } catch (err) {
-      console.error(`Failed to join group auction-${this.id}:`, err);
-      return;
-    }
-
-    // ───────────────────────────────────────────
-    // 4) Subscribe to ReceiveNewBid and update UI
-    this.bidSubscription = this.signalR.bidReceived$.subscribe((payload: NewBidPayload) => {
-      // 4.1) Print raw payload
-      console.log('← ReceivedNewBid payload raw:', JSON.stringify(payload));
-
-      if (payload.auctionId === this.id) {
-        // 4.2) Insert the new bid at the front
-        this.bids.unshift({
-          bidId: 0,                     // placeholder; real ID comes from server if needed
-          auctionId: payload.auctionId,
-          bidderId: payload.bidderId,
-          bidderName: '',               // optionally fill if payload includes it
-          amount: payload.amount,
-          bidTime: new Date(payload.bidTime),
-          isWinning: true               // incoming bid is now winning
-        });
-
-        // ───────────────────────────────────────────
-        // 4.3) Log to confirm the array changed
-        console.log('➤ After unshift, bids =', this.bids);
-
-        // 4.4) Update current price so {{ data.currentPrice }} changes
-        this.data.currentPrice = payload.amount;
-
-        // 4.5) Recompute totals
-        this.totalBidsCount = this.bids.length;
-        this.calculateTotalIncrease();
-
-        // 4.6) Force Angular to update the template immediately
-        this.cd.detectChanges();
-      }
+    // Setup SignalR
+    this.signalR.startConnection().then(() => {
+      this.signalR.joinAuctionGroup(this.id);
+      
+      // Subscribe to bid updates
+      this.bidSubscription = this.signalR.bidReceived$.subscribe((payload: NewBidPayload) => {
+        if (payload.auctionId === this.id) {
+          // Get the latest bid data from the server to ensure we have complete information
+          this.bidService.getAuctionBids(this.id).subscribe(bids => {
+            if (bids.length > 0) {
+              const latestBid = bids[0]; // Server returns bids in descending order
+              
+              // Update current price
+              this.data.currentPrice = latestBid.amount;
+              
+              // Update bids array with complete information
+              this.bids = bids;
+              this.totalBidsCount = bids.length;
+              this.calculateTotalIncrease();
+              
+              // Update next minimum bid
+              this.bidAmount = this.data.currentPrice + this.data.minimumBidIncrement;
+              
+              // Force UI update
+              this.cd.detectChanges();
+            }
+          });
+        }
+      });
     });
   }
 
@@ -434,31 +403,16 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
         throw new Error('თქვენ უკვე გაქვთ უმაღლესი ბიდი');
       }
 
-      const newBid = await this.bidService
+      // Place bid but don't update UI - wait for SignalR
+      await this.bidService
         .placeBid({
           auctionId: this.id,
           amount: this.bidAmount
         })
         .toPromise();
 
-      // Update data without full reload
-      if (newBid) {
-        this.data.currentPrice = this.bidAmount;
-
-        const adjustedDate = new Date();
-        adjustedDate.setHours(adjustedDate.getHours() + 4);
-
-        this.bids.unshift({
-          ...newBid,
-          bidTime: adjustedDate
-        });
-
-        this.totalBidsCount = this.bids.length;
-        this.calculateTotalIncrease();
-
-        this.bidAmount = this.data.currentPrice + this.data.minimumBidIncrement;
-      }
-
+      // Only update the input field for next bid
+      this.bidAmount = this.data.currentPrice + this.data.minimumBidIncrement;
       this.errorMessage = '';
     } catch (error: any) {
       if (error?.status === 401) {
