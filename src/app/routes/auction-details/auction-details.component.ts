@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener, ApplicationRef, ComponentRef, createComponent, EnvironmentInjector } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener, ApplicationRef, ComponentRef, createComponent, EnvironmentInjector, LOCALE_ID } from '@angular/core';
 import { AuctionsService } from '../../serices/auctions.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ImageModalComponent } from '../../components/image-modal/image-modal.component';
 import { BidService, BidOutputDto } from '../../services/bid.service';
@@ -13,7 +13,11 @@ import { AuthDialogComponent } from '../../components/auth-dialog/auth-dialog.co
   standalone: true,
   imports: [CommonModule, FormsModule, ImageModalComponent],
   templateUrl: './auction-details.component.html',
-  styleUrl: './auction-details.component.css'
+  styleUrl: './auction-details.component.css',
+  providers: [
+    DatePipe,
+    { provide: LOCALE_ID, useValue: 'ka-GE' }
+  ]
 })
 export class AuctionDetailsComponent implements OnInit, OnDestroy {
   @ViewChild('mainImage') mainImage!: ElementRef;
@@ -233,10 +237,24 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
     this.selectedImage = null;
   }
 
+  private formatDate(date: string): string {
+    const d = new Date(date);
+    // Add 4 hours to match Georgia timezone
+    d.setHours(d.getHours() + 4);
+    return d.toISOString();
+  }
+
   private loadAuctionDetails(): void {
     this.isDataLoading = true;
     this._http.getAuctionById(this.id).subscribe({
-      next: (res) => {
+      next: (res: any) => {
+        // Format dates to Georgia timezone
+        if (res.startTime) {
+          res.startTime = this.formatDate(res.startTime);
+        }
+        if (res.endTime) {
+          res.endTime = this.formatDate(res.endTime);
+        }
         this.data = res;
         this.bidAmount = this.data.currentPrice + this.data.minimumBidIncrement;
         if (this.data?.item?.imageUrls?.length > 0) {
@@ -256,16 +274,26 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
 
   private loadBids(): void {
     this.bidService.getAuctionBids(this.id).subscribe(bids => {
-      this.bids = bids;
+      // Format bid dates to Georgia timezone
+      this.bids = bids.map(bid => {
+        const adjustedDate = new Date(bid.bidTime);
+        adjustedDate.setHours(adjustedDate.getHours() + 4);
+        return {
+          ...bid,
+          bidTime: adjustedDate
+        };
+      });
       this.totalBidsCount = bids.length;
       this.calculateTotalIncrease();
     });
   }
 
   private calculateTotalIncrease(): void {
-    if (this.bids.length > 0) {
+    if (this.bids.length > 0 && this.data?.startingPrice) {
       const highestBid = Math.max(...this.bids.map(b => b.amount));
       this.totalBidIncrease = highestBid - this.data.startingPrice;
+    } else {
+      this.totalBidIncrease = 0;
     }
   }
 

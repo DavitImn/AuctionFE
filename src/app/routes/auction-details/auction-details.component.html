@@ -109,10 +109,6 @@
           <strong>დასრულება:</strong> 
           <span>{{data?.endTime | date:'yyyy-MM-dd HH:mm'}}</span>
         </div>
-        <div class="info-row bid-info">
-          <strong>დადებული ბიდები:</strong> 
-          <span>{{data?.bidCount}}</span>
-        </div>
       </div>
 
       <div class="countdown-section">
@@ -180,22 +176,21 @@
           <div class="metric">
             <div class="metric-header">
               <span class="value">აქტიური ბიდი</span>
-              <span *ngIf="bids && bids.length > 0" class="last-bidder">
-                {{bids[0].bidderName}} - {{bids[0].bidTime | date:'HH:mm:ss'}}
-              </span>
             </div>
-            <span class="label">{{data?.bidCount}}</span>
+            <div class="last-bidder" *ngIf="bids && bids.length > 0">
+              {{bids[0].bidderName}} - {{bids[0].bidTime | date:'HH:mm'}}
+            </div>
           </div>
           <div class="metric">
             <span class="value">{{viewCount}}</span>
-            <span class="label">ნახვები</span>
+            <span class="label">ნახვა</span>
           </div>
           <div class="metric">
             <div class="total-bids">
-              <span class="increment">+{{totalBidIncrease}}₾ Total</span>
-              <span class="count">{{totalBidsCount}} bids</span>
+              <span class="label">ჯამური ბიდები</span>
+              <span class="increment" *ngIf="totalBidIncrease">+{{totalBidIncrease}}₾</span>
+              <span class="count">{{totalBidsCount}} ბიდი</span>
             </div>
-            <span class="label">ჯამური ბიდები</span>
           </div>
         </div>
 
@@ -204,11 +199,13 @@
           <div class="bid-list">
             <div class="bid-item" *ngFor="let bid of bids">
               <div class="bidder-info">
-                <span class="bidder-name">{{bid.bidderName}}</span>
+                <div class="bid-details">
+                  <span class="bidder-name">{{bid.bidderName}}</span>
+                  <div class="bid-time">
+                    {{bid.bidTime | date:'dd MMM yyyy HH:mm'}}
+                  </div>
+                </div>
                 <span class="bid-amount">{{bid.amount}}₾</span>
-              </div>
-              <div class="bid-time">
-                {{bid.bidTime | date:'dd/MM/yyyy HH:mm:ss'}}
               </div>
             </div>
             <div class="no-bids" *ngIf="bids.length === 0">
