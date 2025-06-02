@@ -1510,3 +1510,60 @@
   }
 }
 
+.winner-banner {
+  background: linear-gradient(135deg, #7c3aed11, #7c3aed22);
+  border: 1px solid #7c3aed33;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.winner-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.winner-details i {
+  color: #7c3aed;
+  font-size: 20px;
+}
+
+.winner-label {
+  color: #666;
+  font-size: 14px;
+}
+
+.winner-name {
+  color: #333;
+  font-weight: 600;
+  margin-right: auto;
+}
+
+.final-amount {
+  color: #10b981;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.bid-item.final-sale {
+  background: #f0fdf4;
+  border-bottom: none;
+}
+
+.bid-item.final-sale .bidder-name {
+  color: #059669;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bid-item.final-sale .bidder-name i {
+  color: #059669;
+}
+
+.bid-item.final-sale .bid-amount {
+  color: #059669;
+  font-size: 22px;
+}
+

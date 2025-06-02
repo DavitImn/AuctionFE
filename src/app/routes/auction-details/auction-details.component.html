@@ -282,6 +282,22 @@
         <div class="bids-history">
           <h3>ბიდების ისტორია</h3>
           <div class="bid-list" #bidList>
+            <!-- Final sale entry for closed auctions -->
+            <div class="bid-item final-sale" *ngIf="data?.status === 'Closed'">
+              <div class="bidder-info">
+                <div class="bid-details">
+                  <span class="bidder-name">
+                    <i class="fas fa-check-circle"></i>
+                    გაყიდულია
+                  </span>
+                  <div class="bid-time">
+                    {{data?.endTime | date:'dd MMM yyyy HH:mm'}}
+                  </div>
+                </div>
+                <span class="bid-amount">{{data?.currentPrice}}₾</span>
+              </div>
+            </div>
+            <!-- Regular bid history -->
             <div class="bid-item" *ngFor="let bid of bids">
               <div class="bidder-info">
                 <div class="bid-details">
