@@ -62,12 +62,23 @@
       </div>
 
       <div class="location-user-view" [class.hidden]="isFullscreen">
-        <div class="location">
-          <i class="fas fa-map-marker-alt"></i> თბილისი
-        </div>
-        <div class="seller" *ngIf="data?.seller">
-          <i class="fas fa-user"></i> {{data?.seller?.firstName}}<br />
-          {{data?.seller?.email}}
+        <div class="seller-info">
+          <div class="seller-image">
+            <img [src]="_http.publicUrl + data?.item?.seller?.userImageUrl" 
+                 alt="seller" 
+                 *ngIf="data?.item?.seller?.userImageUrl"
+                 onerror="this.src='assets/images/default-user.png'">
+          </div>
+          <div class="seller-details">
+            <div class="seller-name">
+              <i class="fas fa-user"></i>
+              {{data?.item?.seller?.firstName}}
+            </div>
+            <div class="location">
+              <i class="fas fa-map-marker-alt"></i>
+              თბილისი
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -90,12 +101,38 @@
         </div>
         <div class="price-details">
           <div class="detail-row">
+            <span>საწყისი ფასი</span>
+            <span>{{data?.startingPrice}}₾</span>
+          </div>
+          <div class="detail-row">
             <span>საკომისიო</span>
             <span>10.00%</span>
           </div>
           <div class="detail-row">
             <span>მინიმალური ბიჯი</span>
             <span>{{data?.minimumBidIncrement}}₾</span>
+          </div>
+          <div class="detail-row status-row">
+            <span>სტატუსი</span>
+            <span [class]="'status-badge ' + data?.status?.toLowerCase()">{{data?.status}}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item-details">
+        <div class="detail-section">
+          <h3>აღწერა</h3>
+          <p>{{data?.item?.description}}</p>
+        </div>
+
+        <div class="specs-grid">
+          <div class="spec-item">
+            <span class="label">კატეგორია</span>
+            <span class="value">{{data?.item?.category}}</span>
+          </div>
+          <div class="spec-item">
+            <span class="label">მდგომარეობა</span>
+            <span class="value">{{data?.item?.condition}}</span>
           </div>
         </div>
       </div>
@@ -193,10 +230,10 @@
         <div class="auction-metrics">
           <div class="metric">
             <div class="metric-header">
-              <span class="value">აქტიური ბიდი</span>
+              <span class="value">{{data?.status === 'Closed' ? 'გამარჯვებული ბიდი' : 'აქტიური ბიდი'}}</span>
             </div>
             <div class="last-bidder" *ngIf="bids && bids.length > 0">
-              {{bids[0].bidderName}} - {{bids[0].bidTime | date:'HH:mm'}}
+              {{bids[0].bidderName}} - {{bids[0].amount}}₾
             </div>
           </div>
           <div class="metric">
@@ -214,7 +251,7 @@
 
         <div class="bids-history">
           <h3>ბიდების ისტორია</h3>
-          <div class="bid-list">
+          <div class="bid-list" #bidList>
             <div class="bid-item" *ngFor="let bid of bids">
               <div class="bidder-info">
                 <div class="bid-details">

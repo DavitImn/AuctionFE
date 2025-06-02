@@ -1121,3 +1121,159 @@
   }
 }
 
+.item-details {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 12px;
+  margin: 20px 0;
+}
+
+.detail-section {
+  margin-bottom: 20px;
+}
+
+.detail-section h3 {
+  color: #2d3748;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.detail-section p {
+  color: #4a5568;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.specs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.spec-item {
+  background: white;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.spec-item .label {
+  display: block;
+  color: #718096;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.spec-item .value {
+  color: #2d3748;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-badge.active {
+  background: #c6f6d5;
+  color: #2f855a;
+}
+
+.status-badge.pending {
+  background: #feebc8;
+  color: #c05621;
+}
+
+.status-badge.closed {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.status-badge.cancelled {
+  background: #fed7d7;
+  color: #c53030;
+}
+
+.seller-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.seller-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #7c3aed;
+}
+
+.seller-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.seller-details {
+  flex: 1;
+}
+
+.seller-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.seller-name i,
+.location i {
+  color: #7c3aed;
+  width: 20px;
+}
+
+.location {
+  color: #718096;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Update bid history styles */
+.bid-list {
+  max-height: 400px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #7c3aed #f1f1f1;
+}
+
+.bid-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.bid-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.bid-list::-webkit-scrollbar-thumb {
+  background: #7c3aed;
+  border-radius: 3px;
+}
+
+.bid-list::-webkit-scrollbar-thumb:hover {
+  background: #6025c0;
+}
+
