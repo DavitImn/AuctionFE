@@ -354,16 +354,32 @@ export class AuctionDetailsComponent implements OnInit, OnDestroy {
         throw new Error('თქვენ უკვე გაქვთ უმაღლესი ბიდი');
       }
 
-      await this.bidService.placeBid({
+      const newBid = await this.bidService.placeBid({
         auctionId: this.id,
         amount: this.bidAmount
       }).toPromise();
 
-      // Refresh data on success
-      await Promise.all([
-        this.loadAuctionDetails(),
-        this.loadBids()
-      ]);
+      // Update data without full reload
+      if (newBid) {
+        // Update current price
+        this.data.currentPrice = this.bidAmount;
+        
+        // Add new bid to the list
+        const adjustedDate = new Date();
+        adjustedDate.setHours(adjustedDate.getHours() + 4);
+        
+        this.bids.unshift({
+          ...newBid,
+          bidTime: adjustedDate
+        });
+
+        // Update counts and totals
+        this.totalBidsCount = this.bids.length;
+        this.calculateTotalIncrease();
+
+        // Update minimum bid amount for next bid
+        this.bidAmount = this.data.currentPrice + this.data.minimumBidIncrement;
+      }
       
       this.errorMessage = '';
       
