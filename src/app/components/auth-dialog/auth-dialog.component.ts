@@ -2,6 +2,8 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
+// rame
+
 @Component({
   selector: 'app-auth-dialog',
   standalone: true,
