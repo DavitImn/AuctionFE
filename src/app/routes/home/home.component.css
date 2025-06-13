@@ -1,7 +1,7 @@
 :host {
   display: block;
   min-height: 100vh;
-  background: linear-gradient(135deg, #6966a1, #7c3aed);
+  background: linear-gradient(135deg, #9074ab 0%, #5b21b6 50%, #856bae 100%);
   padding: 20px;
 }
 
@@ -9,7 +9,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  background: linear-gradient(135deg, #4a1d96 0%, #5b21b6 50%, #6d28d9 100%);
+  background: transparent;
   min-height: 100vh;
   border-radius: 30px;
 }
