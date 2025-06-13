@@ -132,7 +132,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   onCategoryChange(event: any) {
     const categoryValue = event.target.value;
-    this._http.getAuctions().subscribe(response => {
+    const endpoint = this.showOnlyActive ? 'auctions' : 'all-auctions';
+    this._http.getAuctions(endpoint).subscribe(response => {
       const allAuctions = (response as any[])
         .filter(item => !item.isDeleted)
         .map(item => ({
@@ -181,8 +182,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.showOnlyActive = event.target.checked;
     const endpoint = this.showOnlyActive ? 'auctions' : 'all-auctions';
     this._http.getAuctions(endpoint).subscribe(response => {
-      // Filter out deleted auctions and transform the API response
-      this.auctions = (response as any[])
+      const allAuctions = (response as any[])
         .filter(item => !item.isDeleted)
         .map(item => ({
           id: item.auctionId,
@@ -200,6 +200,19 @@ export class HomeComponent implements OnInit, OnDestroy {
           startTime: item.startTime,
           endTime: item.endTime
         }));
+
+      // Get the current category filter value
+      const categorySelect = document.querySelector('.filter-select[ng-reflect-name="category"]') as HTMLSelectElement;
+      const categoryValue = categorySelect ? categorySelect.value : 'all';
+
+      // Apply category filter if needed
+      if (categoryValue !== 'all') {
+        this.auctions = allAuctions.filter(auction => 
+          auction.category === categoryValue
+        );
+      } else {
+        this.auctions = allAuctions;
+      }
     });
   }
 }

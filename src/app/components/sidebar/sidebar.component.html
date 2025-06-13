@@ -9,11 +9,15 @@
   <label for="categorySelect" class="mt-3"><strong>Filter by Category</strong></label>
   <select [(ngModel)]="selectedCategory" (change)="onFilterChange()" id="categorySelect" class="form-control">
     <option value="all">All</option>
-    <option value="Vintage">Vintage</option>
-    <option value="Home Things">Home Things</option>
-    <option value="Electronic">Electronic</option>
+    <option value="Electronics">Electronics</option>
+    <option value="Collectibles">Collectibles</option>
+    <option value="Jewelry">Jewelry</option>
     <option value="Art">Art</option>
+    <option value="Automobiles">Automobiles</option>
+    <option value="Real Estate">Real Estate</option>
     <option value="Furniture">Furniture</option>
-    <!-- Add more as needed -->
+    <option value="Books">Books</option>
+    <option value="Sports Memorabilia">Sports Memorabilia</option>
+    <option value="Toys & Games">Toys & Games</option>
   </select>
 </div>
