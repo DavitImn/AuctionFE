@@ -1,0 +1,157 @@
+.footer {
+  background: linear-gradient(135deg, #4a1d96 0%, #5b21b6 50%, #6d28d9 100%);
+  color: white;
+  padding: 3rem 0 0 0;
+  margin-top: 4rem;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  padding: 0 2rem;
+}
+
+.footer-section {
+  margin-bottom: 2rem;
+}
+
+.footer-section h3 {
+  color: #fff;
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.footer-section h3::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 50px;
+  height: 2px;
+  background: #7c3aed;
+}
+
+.footer-section p {
+  line-height: 1.6;
+  color: #e2e8f0;
+}
+
+.contact-info {
+  margin-top: 1.5rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  color: #e2e8f0;
+}
+
+.contact-item i {
+  margin-right: 1rem;
+  color: #7c3aed;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-section ul li {
+  margin-bottom: 0.8rem;
+}
+
+.footer-section ul li a {
+  color: #e2e8f0;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-section ul li a:hover {
+  color: #7c3aed;
+}
+
+.social-links {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.social-links a {
+  color: white;
+  font-size: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+  color: #7c3aed;
+}
+
+.newsletter h4 {
+  margin-bottom: 1rem;
+  color: #e2e8f0;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.newsletter-form input {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.newsletter-form input::placeholder {
+  color: #cbd5e0;
+}
+
+.newsletter-form button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background: #7c3aed;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.newsletter-form button:hover {
+  background: #6d28d9;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding: 1.5rem 0;
+  margin-top: 2rem;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.footer-bottom p {
+  margin: 0;
+  color: #e2e8f0;
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    grid-template-columns: 1fr;
+    padding: 0 1rem;
+  }
+
+  .newsletter-form {
+    flex-direction: column;
+  }
+
+  .newsletter-form button {
+    width: 100%;
+  }
+}

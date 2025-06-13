@@ -1,3 +1,62 @@
+<div class="about-container">
+  <div class="hero-section">
+    <h1>About Our Auction Platform</h1>
+    <p class="subtitle">Your Trusted Partner in Online Auctions</p>
+  </div>
 
-<div>about</div>
+  <div class="content-section">
+    <div class="about-text">
+      <h2>Welcome to Our Auction Platform</h2>
+      <p>We are a premier online auction platform dedicated to providing a secure, transparent, and user-friendly environment for buying and selling items. Our platform brings together buyers and sellers from around the world, offering a diverse range of products across various categories.</p>
+      
+      <p>Our mission is to revolutionize the auction experience by combining traditional auction principles with cutting-edge technology. We ensure that every transaction is secure, every bid is fair, and every user has the best possible experience.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card" *ngFor="let feature of features">
+        <i class="fas {{feature.icon}}"></i>
+        <h3>{{feature.title}}</h3>
+        <p>{{feature.description}}</p>
+      </div>
+    </div>
+
+    <div class="contact-section">
+      <h2>Get in Touch</h2>
+      <div class="contact-info">
+        <div class="contact-item">
+          <i class="fas fa-phone"></i>
+          <div class="contact-details">
+            <h3>Phone</h3>
+            <p>{{contactInfo.phone}}</p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-envelope"></i>
+          <div class="contact-details">
+            <h3>Email</h3>
+            <p>{{contactInfo.email}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="social-section">
+      <h2>Connect With Us</h2>
+      <div class="social-links">
+        <a [href]="socialLinks.github" target="_blank" rel="noopener noreferrer" class="social-link">
+          <i class="fab fa-github"></i>
+          <span>GitHub</span>
+        </a>
+        <a [href]="socialLinks.facebook" target="_blank" rel="noopener noreferrer" class="social-link">
+          <i class="fab fa-facebook"></i>
+          <span>Facebook</span>
+        </a>
+        <a [href]="socialLinks.linkedin" target="_blank" rel="noopener noreferrer" class="social-link">
+          <i class="fab fa-linkedin"></i>
+          <span>LinkedIn</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- sadsadsa -->

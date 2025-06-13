@@ -1,1 +1,55 @@
-<p>footer works!</p>
+<footer class="footer">
+  <div class="footer-content">
+    <div class="footer-section about">
+      <h3>About Us</h3>
+      <p>Your trusted platform for online auctions. Buy and sell items with confidence through our secure and user-friendly auction system.</p>
+      <div class="contact-info">
+        <div class="contact-item">
+          <i class="fas fa-phone"></i>
+          <span>{{contactInfo.phone}}</span>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-envelope"></i>
+          <span>{{contactInfo.email}}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-section links">
+      <h3>Quick Links</h3>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li><a routerLink="/about">About</a></li>
+        <li><a routerLink="/contact">Contact</a></li>
+        <li><a routerLink="/terms">Terms & Conditions</a></li>
+        <li><a routerLink="/privacy">Privacy Policy</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section social">
+      <h3>Connect With Us</h3>
+      <div class="social-links">
+        <a [href]="socialLinks.github" target="_blank" rel="noopener noreferrer">
+          <i class="fab fa-github"></i>
+        </a>
+        <a [href]="socialLinks.facebook" target="_blank" rel="noopener noreferrer">
+          <i class="fab fa-facebook"></i>
+        </a>
+        <a [href]="socialLinks.linkedin" target="_blank" rel="noopener noreferrer">
+          <i class="fab fa-linkedin"></i>
+        </a>
+      </div>
+      <div class="newsletter">
+        <h4>Subscribe to Newsletter</h4>
+        <form class="newsletter-form">
+          <input type="email" placeholder="Enter your email">
+          <button type="submit">Subscribe</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>&copy; {{currentYear}} Auction Platform. All rights reserved.</p>
+  </div>
+</footer>
