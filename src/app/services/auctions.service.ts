@@ -41,4 +41,8 @@ export class AuctionsService {
   buyNow(auctionId: number): Observable<any> {
     return this.httpService.post(`/api/auctions/${auctionId}/buy-now`, {});
   }
+
+  searchAuctions(query: string) {
+    return this.httpService.get<any>(`/api/Auctions/Search?search=${encodeURIComponent(query)}`);
+  }
 } 

@@ -43,12 +43,15 @@
         class="d-flex mx-auto"
         role="search"
         style="max-width: 400px; width: 100%;"
+        (ngSubmit)="onSearch($event)"
       >
         <input
           class="form-control me-2"
           type="search"
           placeholder="Search"
           aria-label="Search"
+          [(ngModel)]="searchQuery"
+          name="searchQuery"
         />
         <button class="btn btn-outline-success" type="submit">Search</button>
       </form>

@@ -3,6 +3,7 @@ import { AuctionsService } from '../../serices/auctions.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { CardComponent } from '../../components/card/card.component';
 
 interface TimeLeft {
   days: number;
@@ -31,7 +32,7 @@ interface Auction {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, CardComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })

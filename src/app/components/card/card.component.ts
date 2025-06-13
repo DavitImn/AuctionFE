@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { AuctionsService } from '../../serices/auctions.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
 
 @Component({
@@ -22,7 +22,7 @@ export class CardComponent implements OnInit, OnDestroy {
   remainingSeconds: number = 0;
   private timerSubscription?: Subscription;
 
-  constructor(public _http: AuctionsService) {
+  constructor(public _http: AuctionsService, private router: Router) {
     
   }
 
@@ -36,13 +36,27 @@ export class CardComponent implements OnInit, OnDestroy {
     }
   }
 
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'Pending': return 'status-pending';
+      case 'Active': return 'status-active';
+      case 'Closed': return 'status-closed';
+      case 'Cancelled': return 'status-cancelled';
+      default: return '';
+    }
+  }
+
+  navigateToAuction(id: number) {
+    this.router.navigate(['/details', id]);
+  }
+
   placeBid(event: MouseEvent) {
     // Prevent the click event from bubbling up to the card
     event.preventDefault();
     event.stopPropagation();
     
     // Implement your bid logic here
-    console.log('Placing bid for auction:', this.dataForChild.auctionId);
+    console.log('Placing bid for auction:', this.dataForChild.id);
   }
 
   private startTimer() {
