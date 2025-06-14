@@ -2,8 +2,12 @@
 
 body {
   min-height: 100vh;
-  background: linear-gradient(135deg, #9074ab 0%, #5b21b6 50%, #856bae 100%) !important;
-  background-attachment: fixed;
+  background-image: url('/assets/auctionBackGround.png') !important;
+  background-repeat: no-repeat !important;
+  background-position: right bottom !important;
+  background-attachment: fixed !important;
+  background-size: contain !important;
+  background-color: #4e18b2; /* fallback color */
   margin: 0;
   padding: 0;
   font-family: 'Segoe UI', Arial, sans-serif;

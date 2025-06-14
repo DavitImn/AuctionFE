@@ -7,6 +7,7 @@ import { LoginComponent } from './routes/login/login.component';
 import { RegisterComponent } from './routes/register/register.component';
 import { VerifyEmailComponent } from './routes/verify-email/verify-email.component';
 import { SearchComponent } from './routes/search/search.component';
+import { MyAucitonsComponent } from './routes/my-aucitons/my-aucitons.component';
 
 export const routes: Routes = [
      { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -17,6 +18,7 @@ export const routes: Routes = [
     { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'verify-email', component: VerifyEmailComponent },
-  { path: 'search', component: SearchComponent }
+  { path: 'search', component: SearchComponent },
+  { path: 'my-aucitons', component: MyAucitonsComponent }
   //ASDBCX
 ];

@@ -32,8 +32,8 @@ img.rounded-circle {
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background-color: #007bff;
   color: white;
@@ -42,6 +42,7 @@ img.rounded-circle {
   justify-content: center;
   font-weight: bold;
   text-transform: uppercase;
+  margin-left: 10px;
 }
 
 img.rounded-circle {
@@ -64,42 +65,66 @@ img.rounded-circle {
 }
 
 .navbar {
-  background: #4a1d96 !important;
+  background: #fbc33f;
+background: linear-gradient(156deg,rgba(251, 195, 63, 1) 0%, rgba(255, 31, 173, 1) 100%);
   min-height: 72px;
   box-shadow: 0 2px 16px 0 rgba(80, 0, 120, 0.10);
   border-bottom: 2px solid rgba(255,255,255,0.08);
   display: flex;
   align-items: center;
+  opacity: 0.7;
 }
 
 .navbar .navbar-brand {
-  color: #fff !important;
+  color: #181212 !important;
   font-weight: 700;
   font-size: 1.6rem;
   letter-spacing: 1px;
   padding: 0 1.5rem 0 0;
 }
 
-.navbar .nav-link {
-  color: #e2e8f0 !important;
-  font-weight: 500;
-  font-size: 1.1rem;
-  padding: 0.5rem 1.2rem;
-  border-radius: 6px;
+.navbar .nav-link,
+.search-btn, .login-btn, .register-btn, .logout-btn {
+  color: #000000 !important;
+  font-weight: 700;
+  font-size: 1.3rem;
+  padding: 0.7rem 2.2rem;
+  border-radius: 18px;
   margin: 0 0.2rem;
+  background: transparent;
+  box-shadow: none;
+  border: none;
   transition: background 0.2s, color 0.2s;
 }
 
-.navbar .nav-link.active, .navbar .nav-link.router-link-active {
-  background: #fff;
-  color: #4a1d96 !important;
+.navbar .nav-link.active, .navbar .nav-link.router-link-active,
+.search-btn.active, .login-btn.active, .register-btn.active, .logout-btn.active {
+  background: #444;
+  color: #ffe082 !important;
   font-weight: 700;
   box-shadow: 0 2px 8px 0 rgba(80, 0, 120, 0.10);
 }
 
-.navbar .nav-link:hover {
-  background: #5b21b6;
+.navbar .nav-link:hover,
+.search-btn:hover, .login-btn:hover, .register-btn:hover, .logout-btn:hover {
+  background: #444;
   color: #ffe082 !important;
+}
+
+.search-box {
+  background: rgba(248, 246, 246, 0.15);
+  color: #000000;
+  font-size: 1.3rem;
+  border: none;
+  border-radius: 18px;
+  padding: 0.7rem 2.2rem;
+  margin-left: 1rem;
+  transition: background 0.2s, color 0.2s;
+}
+
+.search-box:focus {
+  outline: none;
+  background: #fffbe6;
 }
 
 .navbar .btn,
@@ -114,62 +139,55 @@ img.rounded-circle {
 }
 
 .navbar .btn-outline-primary {
-  border-color: #fff;
   color: #fff;
-  background: transparent;
 }
 
 .navbar .btn-outline-primary:hover {
-  background: #fff;
-  color: #4a1d96;
-  border-color: #fff;
+  background: #000000;
+  color: #ffffff;
 }
 
 .navbar .btn-outline-secondary {
-  border-color: #fff;
-  color: #fff;
-  background: transparent;
+  
+  color: #000000;
+  font-weight: bold;
 }
 
 .navbar .btn-outline-secondary:hover {
-  background: #fff;
-  color: #5b21b6;
-  border-color: #fff;
+  background: #000000;
+  color: #ffffff;
 }
 
 .form-control {
-  background: rgba(255,255,255,0.15);
-  color: #fff;
-  border: 1px solid #fff;
+  background: rgba(248, 246, 246, 0.15);
+  color: #000000;
   border-radius: 8px;
   font-size: 1rem;
 }
 
 .form-control:focus {
   background: rgba(255,255,255,0.25);
-  color: #4a1d96;
+  color: #000000;
   border-color: #ffe082;
   box-shadow: 0 0 0 2px #ffe08233;
 }
 
 .btn-outline-success {
-  color: #fff;
-  border-color: #fff;
-  background: transparent;
-  font-weight: 600;
+  color: #000000;
+  font-weight: bold;
   border-radius: 8px;
   padding: 0.5rem 1.2rem;
+  font-size: 2rem;
 }
 
 .btn-outline-success:hover {
-  background: #fff;
-  color: #4a1d96;
-  border-color: #fff;
+  background: #000000;
+  color: #e33b6d;
 }
 
 .big-home-icon {
   font-size: 2.2rem;
   margin-right: 0.7rem;
   vertical-align: middle;
-  color: #ffe082;
+  color: #000000;
 }

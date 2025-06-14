@@ -1,1 +1,17 @@
-<p>my-aucitons works!</p>
+<div class="dashboard-container">
+  <app-sidebar></app-sidebar>
+  <main class="dashboard-main">
+    <h2>My Auctions</h2>
+    <div *ngIf="loading" class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading your auctions...</p>
+    </div>
+    <div *ngIf="error" class="error-message">{{ error }}</div>
+    <div *ngIf="!loading && !error && auctions.length === 0" class="empty-message">
+      You have no auctions yet.
+    </div>
+    <div class="auctions-grid" *ngIf="!loading && !error && auctions.length > 0">
+      <app-card *ngFor="let auction of auctions" [dataForChild]="auction"></app-card>
+    </div>
+  </main>
+</div>

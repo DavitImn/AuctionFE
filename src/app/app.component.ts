@@ -12,4 +12,5 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 })
 export class AppComponent {
   title = 'AuctionFE';
+  image = 'assets/auctionBackGround.png'; 
 }

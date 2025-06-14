@@ -1,11 +1,11 @@
 <div class="dashboard-container">
   <!-- Sidebar -->
   <aside class="sidebar">
-    <div class="sidebar-logo">A</div>
+    <div class="sidebar-logo">Auction</div>
     <nav class="sidebar-nav">
-      <a class="sidebar-link active">My dashboard</a>
+      <a class="sidebar-link" routerLink="/profile" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">My dashboard</a>
       <a class="sidebar-link">Accounts</a>
-      <a class="sidebar-link">My Auctions</a>
+      <a class="sidebar-link" routerLink="/my-aucitons" routerLinkActive="active">My Auctions</a>
       <a class="sidebar-link">Items</a>
       <a class="sidebar-link">History</a>
       <a class="sidebar-link">Supports</a>
