@@ -23,7 +23,7 @@ img.rounded-circle {
 }
 
 #auth-section a.nav-link:hover {
-  color: #0d6efd;
+  color: #000000;
 }
 
 #auth-section .btn {
@@ -56,7 +56,7 @@ img.rounded-circle {
 }
 
 #auth-section a.nav-link:hover {
-  color: #0d6efd;
+  color: rgb(0, 0, 0);
 }
 
 #auth-section .btn {
@@ -73,6 +73,8 @@ background: linear-gradient(156deg,rgba(251, 195, 63, 1) 0%, rgba(255, 31, 173, 
   display: flex;
   align-items: center;
   opacity: 0.7;
+  border-radius: 20px 20px 20px 20px;
+  margin: 20px 20px 20px 20px;
 }
 
 .navbar .navbar-brand {
@@ -89,8 +91,8 @@ background: linear-gradient(156deg,rgba(251, 195, 63, 1) 0%, rgba(255, 31, 173, 
   font-weight: 700;
   font-size: 1.3rem;
   padding: 0.7rem 2.2rem;
-  border-radius: 18px;
-  margin: 0 0.2rem;
+  border-radius: 8px;
+  margin: 0 0.6rem;
   background: transparent;
   box-shadow: none;
   border: none;
@@ -102,13 +104,13 @@ background: linear-gradient(156deg,rgba(251, 195, 63, 1) 0%, rgba(255, 31, 173, 
   background: #444;
   color: #ffe082 !important;
   font-weight: 700;
-  box-shadow: 0 2px 8px 0 rgba(80, 0, 120, 0.10);
+  box-shadow: none;
 }
 
 .navbar .nav-link:hover,
 .search-btn:hover, .login-btn:hover, .register-btn:hover, .logout-btn:hover {
-  background: #444;
-  color: #ffe082 !important;
+  background: #000000;
+  color: #ffbf00 !important;
 }
 
 .search-box {
