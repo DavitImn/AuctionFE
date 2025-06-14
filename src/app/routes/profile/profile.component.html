@@ -1,1 +1,74 @@
-<p>User inFormaitone!</p>
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">A</div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-link active">My dashboard</a>
+      <a class="sidebar-link">Accounts</a>
+      <a class="sidebar-link">My Auctions</a>
+      <a class="sidebar-link">Items</a>
+      <a class="sidebar-link">History</a>
+      <a class="sidebar-link">Supports</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="dashboard-main">
+    <div class="profile-cards-row">
+      <!-- Main Profile Card -->
+      <section class="profile-card-main">
+        <div class="profile-image-large">
+          <img [src]="getFullImageUrl(user?.userImageUrl)" alt="Profile Image" *ngIf="user?.userImageUrl">
+          <div class="no-image-large" *ngIf="!user?.userImageUrl">
+            {{ user?.firstName?.charAt(0) }}{{ user?.lastName?.charAt(0) }}
+          </div>
+        </div>
+        <div class="profile-main-info">
+          <h2>{{ user?.firstName }} {{ user?.lastName }}</h2>
+          <div class="profile-main-email">{{ user?.email }}</div>
+          <div class="profile-main-username">{{ '@' + (user?.userName || '') }}</div>
+        </div>
+        <div class="profile-meta">
+          <span>Member since {{ user?.registrationDate | date:'mediumDate' }}</span>
+        </div>
+        <div class="profile-actions">
+          <button class="profile-save-btn" disabled>Save</button>
+        </div>
+      </section>
+
+      <!-- Info Card 1: My Auctions -->
+      <section class="profile-info-card">
+        <h3>My Auctions</h3>
+        <div class="info-row">
+          <span>Items for Sale</span>
+          <span class="badge badge-green">{{ user?.itemsForSale?.length || 0 }}</span>
+        </div>
+        <div class="info-row">
+          <span>Won Auctions</span>
+          <span class="badge badge-blue">{{ user?.wonAuctions?.length || 0 }}</span>
+        </div>
+      </section>
+
+      <!-- Info Card 2: My Activity -->
+      <section class="profile-info-card">
+        <h3>My Activity</h3>
+        <div class="info-row">
+          <span>Active Bids</span>
+          <span class="badge badge-orange">{{ user?.bids?.length || 0 }}</span>
+        </div>
+        <div class="info-row">
+          <span>Buy Now Purchases</span>
+          <span class="badge badge-purple">{{ user?.buyNowPurchases?.length || 0 }}</span>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="loading-spinner" *ngIf="loading">
+  <div class="spinner"></div>
+  <p>Loading profile...</p>
+</div>
+<div class="error-message" *ngIf="error">
+  {{ error }}
+</div>
