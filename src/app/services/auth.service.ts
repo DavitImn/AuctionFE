@@ -1,80 +1,87 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private currentUserSubject: BehaviorSubject<any>;
-  public currentUser: Observable<any>;
-  private apiUrl: string = 'https://localhost:7268/api';
+  private apiUrl = `${environment.apiUrl}/Auth`;
   private isLoggedInSubject = new BehaviorSubject<boolean>(false);
   private firstNameSubject = new BehaviorSubject<string>('');
   private userImageUrlSubject = new BehaviorSubject<string>('');
+
+  isLoggedIn$ = this.isLoggedInSubject.asObservable();
+  firstName$ = this.firstNameSubject.asObservable();
+  userImageUrl$ = this.userImageUrlSubject.asObservable();
 
   constructor(
     private http: HttpClient,
     private router: Router,
     private apiService: ApiService
   ) {
-    this.currentUserSubject = new BehaviorSubject<any>(
-      JSON.parse(localStorage.getItem('currentUser') || 'null')
-    );
-    this.currentUser = this.currentUserSubject.asObservable();
-    this.checkAuthState();
-  }
-
-  public get currentUserValue() {
-    return this.currentUserSubject.value;
-  }
-
-  private checkAuthState(): void {
+    // Check if token exists in localStorage on service initialization
     const token = localStorage.getItem('token');
     if (token) {
       this.isLoggedInSubject.next(true);
-      this.firstNameSubject.next(localStorage.getItem('firstName') ?? 'User');
-      const imageUrl = localStorage.getItem('userImageUrl');
-      this.userImageUrlSubject.next(
-        this.apiService.getFullImageUrl(imageUrl)
-      );
-    } else {
-      this.isLoggedInSubject.next(false);
-      this.firstNameSubject.next('');
-      this.userImageUrlSubject.next(this.apiService.getFullImageUrl(null));
+      this.loadUserProfile();
     }
   }
 
   updateAuthState(): void {
-    this.checkAuthState();
+    const token = localStorage.getItem('token');
+    if (token) {
+      this.isLoggedInSubject.next(true);
+      this.loadUserProfile();
+    } else {
+      this.isLoggedInSubject.next(false);
+      this.firstNameSubject.next('');
+      this.userImageUrlSubject.next('');
+    }
+  }
+
+  private loadUserProfile(): void {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
+    this.http.get<any>('https://localhost:7268/api/Users/user-profile', {
+      headers,
+      params: { t: Date.now().toString() }
+    }).subscribe({
+      next: (user) => {
+        console.log('User profile:', user);
+        this.firstNameSubject.next(user.firstName);
+        this.userImageUrlSubject.next(this.apiService.getFullImageUrl(user.userImageUrl));
+      },
+      error: (err) => {
+        console.error('Error loading user profile:', err);
+        // Don't log out on profile load error, just clear the profile data
+        this.firstNameSubject.next('');
+        this.userImageUrlSubject.next('');
+      }
+    });
   }
 
   logout(): void {
-    localStorage.clear();
+    localStorage.removeItem('token');
     this.isLoggedInSubject.next(false);
     this.firstNameSubject.next('');
-    this.userImageUrlSubject.next(this.apiService.getFullImageUrl(null));
-    this.router.navigate(['/login']);
-  }
-
-  get isLoggedIn$(): Observable<boolean> {
-    return this.isLoggedInSubject.asObservable();
-  }
-
-  get firstName$(): Observable<string> {
-    return this.firstNameSubject.asObservable();
-  }
-
-  get userImageUrl$(): Observable<string> {
-    return this.userImageUrlSubject.asObservable();
+    this.userImageUrlSubject.next('');
+    this.router.navigate(['/login']).then(() => {
+      window.location.reload();
+    });
   }
 
   isAuthenticated(): boolean {
-    const token = localStorage.getItem('token');
-    return !!token;
+    return !!localStorage.getItem('token');
   }
 
   async getUserId(): Promise<number | null> {
@@ -93,17 +100,17 @@ export class AuthService {
     }
   }
 
-  login(email: string, password: string) {
-    return this.http
-      .post<any>(`${this.apiUrl}/auth/login`, { email, password })
-      .pipe(
-        map((user) => {
-          localStorage.setItem('currentUser', JSON.stringify(user));
-          // assume your login API also returns 'token' and 'firstName' etc.
-          this.currentUserSubject.next(user);
-          return user;
-        })
-      );
+  login(email: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/login`, { email, password }).pipe(
+      map(response => {
+        if (response && response.accessToken) {
+          localStorage.setItem('token', response.accessToken);
+          this.isLoggedInSubject.next(true);
+          this.loadUserProfile();
+        }
+        return response;
+      })
+    );
   }
 
   /** ← Add this method so SignalRService can read the raw token */

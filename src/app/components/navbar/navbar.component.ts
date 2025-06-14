@@ -22,6 +22,10 @@ export class NavbarComponent {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
     this.firstName$ = this.authService.firstName$;
     this.userImageUrl$ = this.authService.userImageUrl$;
+
+    this.isLoggedIn$.subscribe(val => console.log('Navbar isLoggedIn$', val));
+    this.firstName$.subscribe(val => console.log('Navbar firstName$', val));
+    this.userImageUrl$.subscribe(val => console.log('Navbar userImageUrl$', val));
   }
 
   logout(): void {
